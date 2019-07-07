@@ -10,11 +10,5 @@ BaselineOfPyBridge >> baseline: spec [
 	spec
 		for: #common
 		do: [ spec
-				repository: 'https//github.com/aranega/pybridge';
 				package: 'PyBridge' ]
-]
-
-{ #category : #baselines }
-BaselineOfPyBridge >> projectClass [
-	^ MetacelloCypressBaselineProject
 ]
