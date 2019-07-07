@@ -109,7 +109,7 @@ PyBridgeObject >> finalize [
 { #category : #'reflective operations' }
 PyBridgeObject >> initialize [
 	WeakRegistry default add: self. 
-	instanceMap := WeakValueDictionary new.
+	instanceMap := instanceMap ifNil: [WeakValueDictionary new].
 ]
 
 { #category : #'reflective operations' }
