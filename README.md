@@ -31,7 +31,8 @@ You need to launch the server that will be listening for orders from Pharo.
 Simply checkout to the `python` branch and run the following command:
 
 ```
-$ python server.py
+$ pipenv shell
+(pybridge) $ python server.py
 ```
 
 ### Pharo part
