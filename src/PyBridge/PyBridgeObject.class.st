@@ -5,7 +5,8 @@ Class {
 		'objectId'
 	],
 	#classVars : [
-		'instanceMap'
+		'instanceMap',
+		'string2class'
 	],
 	#category : #'PyBridge-core'
 }
@@ -71,7 +72,7 @@ PyBridgeObject >> decryptObject: aDict [
 	object := instanceMap
 		at: remote_id
 		ifAbsentPut: [ | new_object dict |
-			new_object := self class new.
+			new_object := (string2class at: (aDict at: #kind)) new.
 			instanceMap at: remote_id put: new_object.
 			instanceMap at: objectId put: new_object.
 			dict := {(#python_id -> remote_id)} asDictionary.
@@ -115,17 +116,11 @@ PyBridgeObject >> finalize [
 { #category : #'reflective operations' }
 PyBridgeObject >> initialize [
 	objectId := self bridgeUUID.
-	self finalizationRegistry add: self. 
-	instanceMap := instanceMap ifNil: [WeakValueDictionary new].
-]
-
-{ #category : #'reflective operations' }
-PyBridgeObject >> loadClass: aClassSymbol [
-	"Ask for a class in the remote environment"
-	| dict |
-	dict := {(#class_name -> aClassSymbol)} asDictionary.
-	instanceMap at: self bridgeUUID put: self.
-	self post: dict action: #get_class
+	self finalizationRegistry add: self.
+	instanceMap := instanceMap ifNil: [ WeakValueDictionary new ].
+	string2class := string2class
+		ifNil: [ {(#object -> PyBridgeObject).
+			(#type -> PyBridgeClass)} asDictionary ]
 ]
 
 { #category : #'reflective operations' }
