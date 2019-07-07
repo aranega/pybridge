@@ -7,14 +7,15 @@ class InstanceDict(MutableMapping):
         self.reverse_objects_map = {}
 
     def __delitem__(self, key):
-        try:
-            instance = self.objects_map[key]
-            del self.objects_map[key]
-            del self.reverse_objects_map[id(instance)]
-        except KeyError:
-            instance_id = self.reverse_objects_map[id(key)]
-            del self.objects_map[instance_id]
-            del self.reverse_objects_map[id(key)]
+        # try:
+        #     instance = self.objects_map[key]
+        #     del self.objects_map[key]
+        #     del self.reverse_objects_map[id(instance)]
+        # except KeyError:
+        #     instance_id = self.reverse_objects_map[id(key)]
+        #     del self.objects_map[instance_id]
+        #     del self.reverse_objects_map[id(key)]
+        pass
 
     def __getitem__(self, key):
         try:
@@ -43,6 +44,7 @@ class InstanceDict(MutableMapping):
 # assert i[12] is o
 # assert i[o] is 12
 #
-# del i[12]
-# assert i.objects_map == {}
-# assert i.reverse_objects_map == {}
+# new_id = id(o)
+# i.register_alias(12, new_id)
+#
+# assert i[new_id] is o

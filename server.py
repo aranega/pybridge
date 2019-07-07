@@ -39,7 +39,7 @@ def hello(object_id):
     del change["action"]
     instance = fun(**change)
     print("Result", instance)
-    return build_response(instance, object_id)
+    return build_response(instance)
 
 
 primitive = (int, str, bool, float)
@@ -52,14 +52,18 @@ def is_primitive(o):
 NIL_OBJECT = {"kind": "nil_object"}
 
 
-def build_response(o, caller_id=None):
+def build_response(o):
     response = {}
     if o is None:
         return NIL_OBJECT
     if is_primitive(o):
         return {"kind": "literal", "value": o if o is not None else NIL_OBJECT}
-    if o not in object_map:
-        object_map[o] = id(o)
+    if id(o) not in object_map:
+        object_map.objects_map[id(o)] = o
+        object_map.reverse_objects_map[id(o)] = id(o)
+    if isinstance(o, type):
+        print('Its a type', object_map[o])
+        return {"kind": "type", "value": {"object_id": object_map[o]}}
     return {"kind": "object", "value": {"object_id": object_map[o]}}
 
 
@@ -69,8 +73,10 @@ def register_literal(object_id, value):
 
 
 def register_object(object_id, python_id):
-    o = next(k for k, v in object_map.items() if v == python_id)
+    o = object_map[python_id]
     object_map[object_id] = o
+    object_map.reverse_objects_map[python_id] = object_id
+    print('register', object_id, 'for', o, 'on', python_id)
     return python_id
 
 
@@ -88,6 +94,7 @@ def get_class(object_id, class_name):
     class_name = class_name.replace("::", ".")
     clazz = str_to_class(class_name)
     object_map[object_id] = clazz
+    print('get_class', object_id, id(clazz))
     return clazz
 
 
