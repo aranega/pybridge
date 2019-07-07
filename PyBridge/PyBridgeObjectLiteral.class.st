@@ -7,7 +7,7 @@ Class {
 	#classInstVars : [
 		'literalValue'
 	],
-	#category : #PyBridge
+	#category : #'PyBridge-core'
 }
 
 { #category : #'instance creation' }

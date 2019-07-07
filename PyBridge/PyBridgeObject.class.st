@@ -4,7 +4,7 @@ Class {
 	#classVars : [
 		'instanceMap'
 	],
-	#category : #PyBridge
+	#category : #'PyBridge-core'
 }
 
 { #category : #'reflective operations' }
