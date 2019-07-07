@@ -3,7 +3,6 @@ from flask import request
 import inspect
 from tools import InstanceDict
 import types
-from pyecore.ecore import EClass
 from builtins import list
 import sys
 import importlib
