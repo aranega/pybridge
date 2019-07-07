@@ -20,7 +20,7 @@ PyBridgeObject >> at: anIndex [
 
 { #category : #'reflective operations' }
 PyBridgeObject >> bridgeUUID [
-	^ self identityHash 
+	^ self basicIdentityHash  
 ]
 
 { #category : #'reflective operations' }
@@ -28,7 +28,8 @@ PyBridgeObject >> createInstance: aClassSymbol [
 	"Ask for an instances creation to the remote environment"
 	| dict |
 	dict := {(#class_name -> aClassSymbol)} asDictionary.
-	instanceMap at: self bridgeUUID put: self.
+	instanceMap at: objectId put: self.
+	
 	self post: dict action: #create_instance
 ]
 
@@ -39,7 +40,7 @@ PyBridgeObject >> createInstance: aClassSymbol args: anArray [
 	| dict |
 	dict := {(#class_name -> aClassSymbol).
 	(#args -> anArray)} asDictionary.
-	instanceMap at: self bridgeUUID put: self.
+	instanceMap at: objectId put: self.
 	self post: dict action: #create_instance
 ]
 
@@ -64,16 +65,16 @@ PyBridgeObject >> decryptLiteral: aDict [
 
 { #category : #'reflective operations' }
 PyBridgeObject >> decryptObject: aDict [
-	| object json_object object_id |
+	| object json_object remote_id |
 	json_object := aDict at: #value.
-	object_id := json_object at: #object_id.
+	remote_id := json_object at: #object_id.
 	object := instanceMap
-		at: object_id
+		at: remote_id
 		ifAbsentPut: [ | new_object dict |
 			new_object := self class new.
-			instanceMap at: object_id put: new_object.
-			instanceMap at: self identityHash put: new_object.
-			dict := {(#python_id -> object_id)} asDictionary.
+			instanceMap at: remote_id put: new_object.
+			instanceMap at: objectId put: new_object.
+			dict := {(#python_id -> remote_id)} asDictionary.
 			new_object post: dict action: #register_object.
 			new_object ].
 	^ object
@@ -101,7 +102,7 @@ PyBridgeObject >> doesNotUnderstand: aMessage [
 PyBridgeObject >> encryptValue: aValue [
 	aValue isLiteral ifTrue: [ ^ aValue ].
 	
-	^ { #object_id -> aValue identityHash } asDictionary 
+	^ { #object_id -> aValue basicIdentityHash } asDictionary 
 ]
 
 { #category : #'reflective operations' }
@@ -113,7 +114,8 @@ PyBridgeObject >> finalize [
 
 { #category : #'reflective operations' }
 PyBridgeObject >> initialize [
-	WeakRegistry default add: self. 
+	objectId := self bridgeUUID.
+	self finalizationRegistry add: self. 
 	instanceMap := instanceMap ifNil: [WeakValueDictionary new].
 ]
 
@@ -128,12 +130,10 @@ PyBridgeObject >> loadClass: aClassSymbol [
 
 { #category : #'reflective operations' }
 PyBridgeObject >> post: dict action: action [
-	| object_id |
-	object_id := self bridgeUUID .
-	dict at: #object_id put: object_id.
+	dict at: #object_id put: objectId.
 	dict at: #action put: action.
 	^ ZnEasy
-		post: 'http://127.0.0.1:5000/' , object_id asString
+		post: 'http://127.0.0.1:5000/' , objectId asString
 		data:
 			(ZnEntity
 				with: (STONJSON toString: dict)
