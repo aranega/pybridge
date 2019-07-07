@@ -114,7 +114,7 @@ def instance_setattr(object_id, key, value):
     return instance
 
 
-translation_map = {"+": "__add__", "-": "__sub__"}
+translation_map = {"+": "__add__", "-": "__sub__", "/": "__truediv__"}
 
 
 def instance_getattr(object_id, key):
@@ -134,7 +134,8 @@ def decrypt(o):
     return o
 
 
-def instance_call(object_id, key, args):
+def instance_call(object_id, key, args=None):
+    args = args or []
     instance = object_map[object_id]
     dict = {"object_id": object_id}
     key = translation_map.get(key, key)
@@ -143,7 +144,9 @@ def instance_call(object_id, key, args):
     key = keys[0]
 
     fun = getattr(instance, key)
-    first = keywords.pop(key)
+    first = keywords.pop(key, None)
+    if first is None:
+        return fun()
     try:
         return fun(first, **keywords)
     except TypeError:
