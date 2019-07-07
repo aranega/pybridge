@@ -21,7 +21,12 @@ PyBridgeObject >> at: anIndex [
 
 { #category : #'reflective operations' }
 PyBridgeObject >> bridgeUUID [
-	^ self basicIdentityHash  
+	^ self bridgeUUIDOf: self   
+]
+
+{ #category : #'reflective operations' }
+PyBridgeObject >> bridgeUUIDOf: anObject [
+	^ anObject identityHash 
 ]
 
 { #category : #'reflective operations' }
@@ -53,6 +58,8 @@ PyBridgeObject >> decryptAnswer: aZNResponse [
 		ifTrue: [ ^ self decryptLiteral: dict ].
 	(dict at: #kind) = 'object'
 		ifTrue: [ ^ self decryptObject: dict ].
+	(dict at: #kind) = 'type'
+		ifTrue: [ ^ self decryptObject: dict ].
 	(dict at: #kind) = 'nil_object'
 		ifTrue: [ ^ nil ]
 ]
@@ -67,11 +74,12 @@ PyBridgeObject >> decryptLiteral: aDict [
 { #category : #'reflective operations' }
 PyBridgeObject >> decryptObject: aDict [
 	| object json_object remote_id |
+			
 	json_object := aDict at: #value.
 	remote_id := json_object at: #object_id.
 	object := instanceMap
 		at: remote_id
-		ifAbsentPut: [ | new_object dict |
+		ifAbsentPut: [ | new_object dict |			
 			new_object := (string2class at: (aDict at: #kind)) new.
 			instanceMap at: remote_id put: new_object.
 			instanceMap at: objectId put: new_object.
@@ -103,7 +111,7 @@ PyBridgeObject >> doesNotUnderstand: aMessage [
 PyBridgeObject >> encryptValue: aValue [
 	aValue isLiteral ifTrue: [ ^ aValue ].
 	
-	^ { #object_id -> aValue basicIdentityHash } asDictionary 
+	^ { #object_id -> self bridgeUUIDOf: aValue } asDictionary 
 ]
 
 { #category : #'reflective operations' }
