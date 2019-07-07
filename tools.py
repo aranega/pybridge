@@ -7,15 +7,14 @@ class InstanceDict(MutableMapping):
         self.reverse_objects_map = {}
 
     def __delitem__(self, key):
-        # try:
-        #     instance = self.objects_map[key]
-        #     del self.objects_map[key]
-        #     del self.reverse_objects_map[id(instance)]
-        # except KeyError:
-        #     instance_id = self.reverse_objects_map[id(key)]
-        #     del self.objects_map[instance_id]
-        #     del self.reverse_objects_map[id(key)]
-        pass
+        try:
+            instance = self.objects_map[key]
+            del self.objects_map[key]
+            del self.reverse_objects_map[id(instance)]
+        except KeyError:
+            instance_id = self.reverse_objects_map[id(key)]
+            del self.objects_map[instance_id]
+            del self.reverse_objects_map[id(key)]
 
     def __getitem__(self, key):
         try:

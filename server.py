@@ -58,9 +58,9 @@ def build_response(o):
         return NIL_OBJECT
     if is_primitive(o):
         return {"kind": "literal", "value": o if o is not None else NIL_OBJECT}
-    if id(o) not in object_map:
-        object_map.objects_map[id(o)] = o
-        object_map.reverse_objects_map[id(o)] = id(o)
+    if o not in object_map:
+        print('registering', o, id(o))
+        object_map[id(o)] = o
     if isinstance(o, type):
         print('Its a type', object_map[o])
         return {"kind": "type", "value": {"object_id": object_map[o]}}
@@ -118,7 +118,6 @@ def instance_setattr(object_id, key, value):
         return fun(decrypt(value))
     setattr(instance, key, value)
     print("Set", key, value)
-    return instance
 
 
 translation_map = {"+": "__add__", "-": "__sub__", "/": "__truediv__"}
