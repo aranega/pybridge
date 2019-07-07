@@ -7,7 +7,5 @@ Class {
 { #category : #'reflective operations' }
 PyBridge class >> loadClass: aClassSymbol [
 	"Ask for a class in the remote environment"
-	| instance |
-	instance := PyBridgeClass new loadClass: aClassSymbol.
-	^ instance
+	^ PyBridgeClass new loadClass: aClassSymbol.
 ]

@@ -79,10 +79,9 @@ PyBridgeObject >> decryptObject: aDict [
 	remote_id := json_object at: #object_id.
 	object := instanceMap
 		at: remote_id
-		ifAbsentPut: [ | new_object dict |			
+		ifAbsent: [ | new_object dict |			
 			new_object := (string2class at: (aDict at: #kind)) new.
-			instanceMap at: remote_id put: new_object.
-			instanceMap at: objectId put: new_object.
+			instanceMap at: new_object bridgeUUID put: new_object.
 			dict := {(#python_id -> remote_id)} asDictionary.
 			new_object post: dict action: #register_object.
 			new_object ].
