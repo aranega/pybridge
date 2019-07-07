@@ -1,10 +1,7 @@
 Class {
 	#name : #BaselineOfPyBridge,
 	#superclass : #BaselineOf,
-	#classVars : [
-		'instanceMap'
-	],
-	#category : #'PyBridge-baseline'
+	#category : #BaselineOfPyBridge
 }
 
 { #category : #baselines }
