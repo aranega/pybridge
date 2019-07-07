@@ -1,6 +1,9 @@
 Class {
 	#name : #PyBridgeObject,
 	#superclass : #Object,
+	#instVars : [
+		'objectId'
+	],
 	#classVars : [
 		'instanceMap'
 	],
@@ -47,7 +50,9 @@ PyBridgeObject >> decryptAnswer: aZNResponse [
 	(dict at: #kind) = 'literal'
 		ifTrue: [ ^ self decryptLiteral: dict ].
 	(dict at: #kind) = 'object'
-		ifTrue: [ ^ self decryptObject: dict ]
+		ifTrue: [ ^ self decryptObject: dict ].
+	(dict at: #kind) = 'nil_object'
+		ifTrue: [ ^ nil ]
 ]
 
 { #category : #'reflective operations' }
