@@ -19,3 +19,11 @@ PyBridgeClass >> new [
 	dict := {(#key -> #__call__)} asDictionary.
 	^ self decryptAnswer: (self post: dict action: #instance_call)
 ]
+
+{ #category : #'reflective operations' }
+PyBridgeClass >> printString [
+	| str res |
+	str := self class name asString.
+	res := self __str__: self.
+	^ str, '(', res literalValue, ')'
+]

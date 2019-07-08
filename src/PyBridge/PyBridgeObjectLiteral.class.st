@@ -31,5 +31,7 @@ PyBridgeObjectLiteral >> literalValue: anObject [
 
 { #category : #accessing }
 PyBridgeObjectLiteral >> printString [
-	^ super printString, '(', literalValue asString , ')'
+	| str |
+	str := self class name asString.
+	^ str, '(', literalValue asString, ')'
 ]

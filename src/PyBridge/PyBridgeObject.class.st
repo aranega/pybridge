@@ -13,10 +13,7 @@ Class {
 
 { #category : #'reflective operations' }
 PyBridgeObject >> at: anIndex [
-	| dict |
-	dict := {(#args -> {anIndex}).
-	(#key -> #__getitem__)} asDictionary.
-	^ self decryptAnswer: (self post: dict action: #instance_call)
+	^ self __getitem__: anIndex
 ]
 
 { #category : #'reflective operations' }
@@ -140,4 +137,12 @@ PyBridgeObject >> post: dict action: action [
 			(ZnEntity
 				with: (STONJSON toString: dict)
 				type: ZnMimeType applicationJson)
+]
+
+{ #category : #'reflective operations' }
+PyBridgeObject >> printString [
+	| str res |
+	str := super printString.
+	res := self __str__.
+	^ str, '(', res literalValue, ')'
 ]
