@@ -87,7 +87,10 @@ def str_to_class(str):
         class_name = segments[-1]
         module = importlib.import_module(module)
         return getattr(module, class_name)
-    return getattr(sys.modules[__name__], str)
+    try:
+        return getattr(sys.modules[__name__], str)
+    except Exception:
+        return importlib.import_module(str) 
 
 
 def get_class(object_id, class_name):
