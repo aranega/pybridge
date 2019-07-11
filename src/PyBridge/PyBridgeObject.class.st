@@ -58,7 +58,14 @@ PyBridgeObject >> decryptAnswer: aZNResponse [
 	(dict at: #kind) = 'type'
 		ifTrue: [ ^ self decryptObject: dict ].
 	(dict at: #kind) = 'nil_object'
-		ifTrue: [ ^ nil ]
+		ifTrue: [ ^ nil ].
+	(dict at: #kind) = 'exception'
+		ifTrue: [ ^ self decryptException: dict ]
+]
+
+{ #category : #'reflective operations' }
+PyBridgeObject >> decryptException: aDict [
+	PyBridgeException fromClass: (aDict at: #class)  signal: (aDict at: #args) asString withArgs: (aDict at: #args) 
 ]
 
 { #category : #'reflective operations' }
