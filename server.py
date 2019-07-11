@@ -19,6 +19,10 @@ class A(object):
         self.myval += i + j
         return self.myval
 
+    def hello(self, message='hello', number=None):
+        print('From hello', message, number.myval)
+        return number
+
     def myself(self):
         return self
 
@@ -37,9 +41,20 @@ def hello(object_id):
     frame = inspect.currentframe()
     fun = frame.f_globals[change["action"]]
     del change["action"]
-    instance = fun(**change)
-    print("Result", instance)
+    try:
+        instance = fun(**change)
+        print("Result", instance)
+    except Exception as e:
+        return build_exception(e)
     return build_response(instance)
+
+
+def build_exception(e):
+    return {
+        "kind": "exception",
+        "class": e.__class__.__name__,
+        "args": e.args,
+    }
 
 
 primitive = (int, str, bool, float)
@@ -90,7 +105,7 @@ def str_to_class(str):
     try:
         return getattr(sys.modules[__name__], str)
     except Exception:
-        return importlib.import_module(str) 
+        return importlib.import_module(str)
 
 
 def get_class(object_id, class_name):
