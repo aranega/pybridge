@@ -93,6 +93,26 @@ PyBridgeObject >> decryptObject: aDict [
 ]
 
 { #category : #'reflective operations' }
+PyBridgeObject >> do: aBlock [
+	self doWithIndex: aBlock
+]
+
+{ #category : #'reflective operations' }
+PyBridgeObject >> doWithIndex: aBlock [
+	| iterator raisedException i |
+	iterator := self __iter__.
+	raisedException := false.
+	i := 0.
+	[ raisedException ]
+		whileFalse: [ | element |			
+			[ element := iterator __next__.
+			aBlock cull: element cull: i.
+			i := i + 1]
+				on: PyBridgeException
+				do: [ :e | e exceptionClass = #StopIteration ifTrue: [ raisedException := true ] ifFalse: [ e signal ] ]  ]
+]
+
+{ #category : #'reflective operations' }
 PyBridgeObject >> doesNotUnderstand: aMessage [
 	| dict arg args |
 	aMessage numArgs = 0
