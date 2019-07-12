@@ -111,7 +111,7 @@ PyBridgeObject >> doesNotUnderstand: aMessage [
 PyBridgeObject >> encryptValue: aValue [
 	aValue isLiteral ifTrue: [ ^ aValue ].
 	
-	^ { #object_id -> (self bridgeUUIDOf: aValue) } asDictionary 
+	^ { #object_id -> (self bridgeUUIDOf: aValue) } asDictionary
 ]
 
 { #category : #'reflective operations' }
