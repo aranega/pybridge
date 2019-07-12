@@ -41,10 +41,10 @@ You can create objects of a dedicated Python type in Pharo using the `PyBridgeOb
 For example, you can open a playground and type:
 
 ```smalltalk
-myobject := PyBridgeObject new createInstance: #A.  "A here is a class from the server, it's only a test class"
+myobject := PyBridge createInstance: #A.  "A here is a class from the server, it's only a test class"
 myobject myval.  "Returns a PyBridgeObjectLiteral with the value 0"
 
-otherObject := PyBridgeObject new createInstance: #A.  "Creates another A object"
+otherObject := PyBridge createInstance: #A.  "Creates another A object"
 myobject myref: otherObject.  "Links the two object instances"
 
 myobject myref.  "Returns otherObject"
