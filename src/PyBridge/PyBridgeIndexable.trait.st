@@ -12,3 +12,13 @@ PyBridgeIndexable >> at: anIndex [
 PyBridgeIndexable >> at: anIndex put: anObject [
 	^ self __setitem__: anIndex item: anObject 
 ]
+
+{ #category : #accessing }
+PyBridgeIndexable >> len [
+	^ self __len__
+]
+
+{ #category : #accessing }
+PyBridgeIndexable >> size [
+	^ self __len__ value
+]
