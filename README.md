@@ -75,7 +75,8 @@ Then, few values are added inside and we iterate over each keys and values print
 mydict := PyBridge createInstance: #builtins::dict.
 mydict at: #k1 put: 'value1'.
 mydict at: #k2 put: 2.
-mydict items do: [:tuple | Transcript crShow: '(', (tuple at: 0) value, ',', (tuple at: 1) value asString, ')'].
+"Unpacking is (kinda) supported"
+mydict items do: [:key :val | Transcript crShow: '(', key value, ',', value asString, ')'].
 ```
 
 Here, we compile and disassemble some Python code.
