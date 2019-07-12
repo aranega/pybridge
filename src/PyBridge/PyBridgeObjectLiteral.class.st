@@ -35,3 +35,8 @@ PyBridgeObjectLiteral >> printString [
 	str := self class name asString.
 	^ str, '(', literalValue asString, ')'
 ]
+
+{ #category : #accessing }
+PyBridgeObjectLiteral >> value [
+	^ literalValue 
+]
