@@ -5,6 +5,12 @@ Class {
 }
 
 { #category : #'reflective operations' }
+PyBridge class >> load: aClassSymbol [
+	"Ask for a class in the remote environment"
+	^ PyBridgeClass new loadClass: aClassSymbol.
+]
+
+{ #category : #'reflective operations' }
 PyBridge class >> loadClass: aClassSymbol [
 	"Ask for a class in the remote environment"
 	^ PyBridgeClass new loadClass: aClassSymbol.
