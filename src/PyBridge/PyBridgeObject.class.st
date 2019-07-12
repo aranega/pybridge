@@ -1,6 +1,8 @@
 Class {
 	#name : #PyBridgeObject,
 	#superclass : #Object,
+	#traits : 'PyBridgeIterable + PyBridgeContextManager + PyBridgeIndexable',
+	#classTraits : 'PyBridgeIterable classTrait + PyBridgeContextManager classTrait + PyBridgeIndexable classTrait',
 	#instVars : [
 		'objectId'
 	],
@@ -10,11 +12,6 @@ Class {
 	],
 	#category : #'PyBridge-core'
 }
-
-{ #category : #'reflective operations' }
-PyBridgeObject >> at: anIndex [
-	^ self __getitem__: anIndex
-]
 
 { #category : #'reflective operations' }
 PyBridgeObject >> bridgeUUID [
@@ -93,26 +90,6 @@ PyBridgeObject >> decryptObject: aDict [
 ]
 
 { #category : #'reflective operations' }
-PyBridgeObject >> do: aBlock [
-	self doWithIndex: aBlock
-]
-
-{ #category : #'reflective operations' }
-PyBridgeObject >> doWithIndex: aBlock [
-	| iterator raisedException i |
-	iterator := self __iter__.
-	raisedException := false.
-	i := 0.
-	[ raisedException ]
-		whileFalse: [ | element |			
-			[ element := iterator __next__.
-			aBlock cull: element cull: i.
-			i := i + 1]
-				on: PyBridgeException
-				do: [ :e | e exceptionClass = #StopIteration ifTrue: [ raisedException := true ] ifFalse: [ e signal ] ]  ]
-]
-
-{ #category : #'reflective operations' }
 PyBridgeObject >> doesNotUnderstand: aMessage [
 	| dict arg args |
 	aMessage numArgs = 0
@@ -172,12 +149,4 @@ PyBridgeObject >> printString [
 	str := super printString.
 	res := self __str__.
 	^ str, '(', res literalValue, ')'
-]
-
-{ #category : #'reflective operations' }
-PyBridgeObject >> with: aBlock [
-	| element |
-	element := self __enter__.
-	aBlock value: element.
-	element __exit__: 0 exc_val: 0 exc_tb: 0.
 ]
