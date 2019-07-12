@@ -146,7 +146,7 @@ def instance_getattr(object_id, key):
     dict = {"object_id": object_id}
     key = translation_map.get(key, key)
     value = getattr(instance, key)
-    if callable(value) and not isinstance(value, type):
+    if callable(value) and not isinstance(value, type) and not inspect.ismodule(instance):
         print("callable")
         value = value()
     return value
