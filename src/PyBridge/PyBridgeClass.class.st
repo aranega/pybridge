@@ -9,7 +9,7 @@ PyBridgeClass >> loadClass: aClassSymbol [
 	"Ask for a class in the remote environment"
 	| dict |
 	dict := {(#class_name -> aClassSymbol)} asDictionary.
-	instanceMap at: self bridgeUUID put: self.
+	self class instanceMap at: self bridgeUUID put: self.
 	self post: dict action: #get_class
 ]
 
