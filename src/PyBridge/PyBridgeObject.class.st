@@ -103,7 +103,7 @@ PyBridgeObject >> decryptObject: aDict [
 
 { #category : #'reflective operations' }
 PyBridgeObject >> doesNotUnderstand: aMessage [
-	| dict arg args |
+	| dict arg |
 	aMessage numArgs = 0
 		ifTrue: [ dict := {(#key -> aMessage selector)} asDictionary.
 			^ self decryptAnswer: (self post: dict action: #instance_getattr) ].
@@ -112,11 +112,7 @@ PyBridgeObject >> doesNotUnderstand: aMessage [
 			dict := {(#value -> (self encryptValue: arg)).
 			(#key -> aMessage selector)} asDictionary.
 			^ self decryptAnswer: (self post: dict action: #instance_setattr) ].
-	args := aMessage arguments
-		collect: [ :each | self encryptValue: each ].
-	dict := {(#args -> args).
-	(#key -> aMessage selector)} asDictionary.
-	^ self decryptAnswer: (self post: dict action: #instance_call)
+	^ self performCall: aMessage selector args: aMessage arguments
 ]
 
 { #category : #'reflective operations' }
@@ -157,6 +153,15 @@ PyBridgeObject >> gtInspectorRemoteObject: composite [
 PyBridgeObject >> initialize [
 	objectId := self bridgeUUID.
 	self finalizationRegistry add: self.
+]
+
+{ #category : #'reflective operations' }
+PyBridgeObject >> performCall: methodName args: arguments [
+	| args dict |
+	args := arguments collect: [ :each | self encryptValue: each ].
+	dict := {(#args -> args).
+	(#key -> methodName)} asDictionary.
+	^ self decryptAnswer: (self post: dict action: #instance_call)
 ]
 
 { #category : #'reflective operations' }
