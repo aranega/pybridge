@@ -18,6 +18,11 @@ PyBridge class >> createInstance: aClassSymbol [
 ]
 
 { #category : #'reflective operations' }
+PyBridge class >> createInstance: aClassSymbol args: anArray [
+	^ PyBridgeObject new createInstance: aClassSymbol args: anArray
+]
+
+{ #category : #'reflective operations' }
 PyBridge class >> flushInstances [
 	PyBridgeObject instanceMap removeAll
 ]
