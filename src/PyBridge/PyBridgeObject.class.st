@@ -15,12 +15,12 @@ Class {
 
 { #category : #testing }
 PyBridgeObject class >> instanceMap [
-	^ instanceMap ifNil: [ WeakValueDictionary new ]
+	^ instanceMap := instanceMap ifNil: [ WeakValueDictionary new ]
 ]
 
 { #category : #testing }
 PyBridgeObject class >> string2class [
-	^ string2class
+	^ string2class := string2class
 		ifNil: [ {(#object -> PyBridgeObject).
 			(#type -> PyBridgeClass)} asDictionary ]
 ]

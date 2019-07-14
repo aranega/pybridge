@@ -10,6 +10,11 @@ PyBridge class >> createInstance: aClassSymbol [
 ]
 
 { #category : #'reflective operations' }
+PyBridge class >> flushInstances [
+	PyBridgeObject instanceMap removeAll
+]
+
+{ #category : #'reflective operations' }
 PyBridge class >> load: aClassSymbol [
 	"Ask for a class in the remote environment"
 	^ PyBridgeClass new loadClass: aClassSymbol.
