@@ -6,12 +6,24 @@ Class {
 	#instVars : [
 		'objectId'
 	],
-	#classVars : [
+	#classInstVars : [
 		'instanceMap',
 		'string2class'
 	],
 	#category : #'PyBridge-core'
 }
+
+{ #category : #testing }
+PyBridgeObject class >> instanceMap [
+	^ instanceMap ifNil: [ WeakValueDictionary new ]
+]
+
+{ #category : #testing }
+PyBridgeObject class >> string2class [
+	^ string2class
+		ifNil: [ {(#object -> PyBridgeObject).
+			(#type -> PyBridgeClass)} asDictionary ]
+]
 
 { #category : #'reflective operations' }
 PyBridgeObject >> bridgeUUID [
@@ -28,7 +40,7 @@ PyBridgeObject >> createInstance: aClassSymbol [
 	"Ask for an instances creation to the remote environment"
 	| dict |
 	dict := {(#class_name -> aClassSymbol)} asDictionary.
-	instanceMap at: objectId put: self.
+	self class instanceMap at: objectId put: self.
 	
 	self post: dict action: #create_instance
 ]
@@ -40,7 +52,7 @@ PyBridgeObject >> createInstance: aClassSymbol args: anArray [
 	| dict |
 	dict := {(#class_name -> aClassSymbol).
 	(#args -> anArray)} asDictionary.
-	instanceMap at: objectId put: self.
+	self class instanceMap at: objectId put: self.
 	self post: dict action: #create_instance
 ]
 
@@ -78,11 +90,11 @@ PyBridgeObject >> decryptObject: aDict [
 			
 	json_object := aDict at: #value.
 	remote_id := json_object at: #object_id.
-	object := instanceMap
+	object := self class instanceMap
 		at: remote_id
 		ifAbsent: [ | new_object dict |			
-			new_object := (string2class at: (aDict at: #kind)) new.
-			instanceMap at: new_object bridgeUUID put: new_object.
+			new_object := (self class string2class at: (aDict at: #kind)) new.
+			self class instanceMap at: new_object bridgeUUID put: new_object.
 			dict := {(#python_id -> remote_id)} asDictionary.
 			new_object post: dict action: #register_object.
 			new_object ].
@@ -125,10 +137,6 @@ PyBridgeObject >> finalize [
 PyBridgeObject >> initialize [
 	objectId := self bridgeUUID.
 	self finalizationRegistry add: self.
-	instanceMap := instanceMap ifNil: [ WeakValueDictionary new ].
-	string2class := string2class
-		ifNil: [ {(#object -> PyBridgeObject).
-			(#type -> PyBridgeClass)} asDictionary ]
 ]
 
 { #category : #'reflective operations' }
