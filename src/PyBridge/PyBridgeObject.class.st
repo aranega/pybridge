@@ -6,9 +6,6 @@ Class {
 	#instVars : [
 		'objectId'
 	],
-	#classVars : [
-		'builtins'
-	],
 	#classInstVars : [
 		'instanceMap',
 		'string2class'
@@ -36,11 +33,6 @@ PyBridgeObject >> bridgeUUID [
 { #category : #'reflective operations' }
 PyBridgeObject >> bridgeUUIDOf: anObject [
 	^ anObject identityHash 
-]
-
-{ #category : #'reflective operations' }
-PyBridgeObject >> builtins [
-	^ builtins := builtins ifNil: [PyBridge load: #builtins]
 ]
 
 { #category : #'reflective operations' }
