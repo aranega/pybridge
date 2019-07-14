@@ -39,6 +39,11 @@ PyBridgeObject >> bridgeUUIDOf: anObject [
 ]
 
 { #category : #'reflective operations' }
+PyBridgeObject >> builtins [
+	^ builtins := builtins ifNil: [PyBridge load: #builtins]
+]
+
+{ #category : #'reflective operations' }
 PyBridgeObject >> createInstance: aClassSymbol [
 	"Ask for an instances creation to the remote environment"
 	| dict |
