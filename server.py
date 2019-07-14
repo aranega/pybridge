@@ -50,6 +50,7 @@ def hello(object_id):
 
 
 def build_exception(e):
+    print(e)
     return {
         "kind": "exception",
         "class": e.__class__.__name__,
@@ -116,9 +117,13 @@ def get_class(object_id, class_name):
     return clazz
 
 
-def create_instance(object_id, class_name, args=None):
-    class_name = class_name.replace("::", ".")
-    clazz = str_to_class(class_name)
+def create_instance(object_id, class_name=None, clazz=None, args=None):
+    if class_name:
+        class_name = class_name.replace("::", ".")
+        clazz = str_to_class(class_name)
+    else:
+        clazz = decrypt(clazz)
+        class_name = clazz.__name__
     instance = clazz(*args) if args else clazz()
     object_map[object_id] = instance
 
