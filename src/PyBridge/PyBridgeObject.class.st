@@ -6,14 +6,16 @@ Class {
 	#instVars : [
 		'objectId'
 	],
+	#classVars : [
+		'instanceMap'
+	],
 	#classInstVars : [
-		'instanceMap',
 		'string2class'
 	],
 	#category : #'PyBridge-core'
 }
 
-{ #category : #testing }
+{ #category : #'reflective operations' }
 PyBridgeObject class >> instanceMap [
 	^ instanceMap := instanceMap ifNil: [ WeakValueDictionary new ]
 ]
@@ -40,7 +42,7 @@ PyBridgeObject >> createInstance: aClassSymbol [
 	"Ask for an instances creation to the remote environment"
 	| dict |
 	dict := {(#class_name -> aClassSymbol)} asDictionary.
-	self class instanceMap at: objectId put: self.
+	self instanceMap at: objectId put: self.
 	
 	self post: dict action: #create_instance
 ]
@@ -52,7 +54,7 @@ PyBridgeObject >> createInstance: aClassSymbol args: anArray [
 	| dict |
 	dict := {(#class_name -> aClassSymbol).
 	(#args -> anArray)} asDictionary.
-	self class instanceMap at: objectId put: self.
+	self instanceMap at: objectId put: self.
 	self post: dict action: #create_instance
 ]
 
@@ -90,11 +92,11 @@ PyBridgeObject >> decryptObject: aDict [
 			
 	json_object := aDict at: #value.
 	remote_id := json_object at: #object_id.
-	object := self class instanceMap
+	object := self instanceMap
 		at: remote_id
 		ifAbsent: [ | new_object dict |			
 			new_object := (self class string2class at: (aDict at: #kind)) new.
-			self class instanceMap at: new_object bridgeUUID put: new_object.
+			self instanceMap at: new_object bridgeUUID put: new_object.
 			dict := {(#python_id -> remote_id)} asDictionary.
 			new_object post: dict action: #register_object.
 			new_object ].
@@ -153,6 +155,11 @@ PyBridgeObject >> gtInspectorRemoteObject: composite [
 PyBridgeObject >> initialize [
 	objectId := self bridgeUUID.
 	self finalizationRegistry add: self.
+]
+
+{ #category : #'reflective operations' }
+PyBridgeObject >> instanceMap [
+	^ self class instanceMap
 ]
 
 { #category : #'reflective operations' }
