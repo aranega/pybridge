@@ -124,7 +124,10 @@ def create_instance(object_id, class_name=None, clazz=None, args=None):
     else:
         clazz = decrypt(clazz)
         class_name = clazz.__name__
-    instance = clazz(*args) if args else clazz()
+    if isinstance(args, dict):
+        instance = clazz(**args)
+    else:
+        instance = clazz(*args) if args else clazz()
     object_map[object_id] = instance
 
     print("Create", class_name, object_id)
