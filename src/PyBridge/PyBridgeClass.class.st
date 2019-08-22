@@ -15,15 +15,18 @@ PyBridgeClass >> loadClass: aClassSymbol [
 
 { #category : #'reflective operations' }
 PyBridgeClass >> new [
-	^ self new: #()
+	^ self new: {} asDictionary 
 ]
 
 { #category : #'reflective operations' }
 PyBridgeClass >> new: arguments [
 	| args dict |
-	args := arguments collect: [ :each | self encryptValue: each ].
+	args := Dictionary new.
+	arguments
+		do: [ :item | args at: item key put: (self encryptValue: item value) ].
 	dict := {(#args -> args).
-	(#clazz -> (self encryptValue: self))} asDictionary.
+	(#clazz -> (self encryptValue: self)).
+	(#nonexisting -> true)} asDictionary.
 	^ self decryptAnswer: (self post: dict action: #create_instance)
 ]
 
