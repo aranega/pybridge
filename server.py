@@ -117,7 +117,7 @@ def get_class(object_id, class_name):
     return clazz
 
 
-def create_instance(object_id, class_name=None, clazz=None, args=None):
+def create_instance(object_id, class_name=None, clazz=None, args=None, nonexisting=False):
     if class_name:
         class_name = class_name.replace("::", ".")
         clazz = str_to_class(class_name)
@@ -128,7 +128,10 @@ def create_instance(object_id, class_name=None, clazz=None, args=None):
         instance = clazz(**args)
     else:
         instance = clazz(*args) if args else clazz()
-    object_map[object_id] = instance
+    if nonexisting:
+        object_map[id(instance)] = instance
+    else:
+        object_map[object_id] = instance
 
     print("Create", class_name, object_id)
     return instance
