@@ -28,6 +28,17 @@ PyBridgeObject class >> string2class [
 ]
 
 { #category : #'reflective operations' }
+PyBridgeObject >> asNativeDict [
+	| dict response newDict |
+	response := self post: Dictionary new action: #get__dict__.
+	dict := STONJSON fromString: response contents.
+	newDict := Dictionary new.
+	dict
+		keysAndValuesDo: [ :key :val | newDict at: key put: (self decryptPythonElement: val) ].
+	^ newDict
+]
+
+{ #category : #'reflective operations' }
 PyBridgeObject >> bridgeUUID [
 	^ self bridgeUUIDOf: self   
 ]
@@ -62,16 +73,7 @@ PyBridgeObject >> createInstance: aClassSymbol args: anArray [
 PyBridgeObject >> decryptAnswer: aZNResponse [
 	| dict |
 	dict := STONJSON fromString: aZNResponse contents.
-	(dict at: #kind) = 'literal'
-		ifTrue: [ ^ self decryptLiteral: dict ].
-	(dict at: #kind) = 'object'
-		ifTrue: [ ^ self decryptObject: dict ].
-	(dict at: #kind) = 'type'
-		ifTrue: [ ^ self decryptObject: dict ].
-	(dict at: #kind) = 'nil_object'
-		ifTrue: [ ^ nil ].
-	(dict at: #kind) = 'exception'
-		ifTrue: [ ^ self decryptException: dict ]
+	^ self decryptPythonElement: dict
 ]
 
 { #category : #'reflective operations' }
@@ -101,6 +103,20 @@ PyBridgeObject >> decryptObject: aDict [
 			new_object post: dict action: #register_object.
 			new_object ].
 	^ object
+]
+
+{ #category : #'reflective operations' }
+PyBridgeObject >> decryptPythonElement: dict [
+	(dict at: #kind) = 'literal'
+		ifTrue: [ ^ self decryptLiteral: dict ].
+	(dict at: #kind) = 'object'
+		ifTrue: [ ^ self decryptObject: dict ].
+	(dict at: #kind) = 'type'
+		ifTrue: [ ^ self decryptObject: dict ].
+	(dict at: #kind) = 'nil_object'
+		ifTrue: [ ^ nil ].
+	(dict at: #kind) = 'exception'
+		ifTrue: [ ^ self decryptException: dict ]
 ]
 
 { #category : #'reflective operations' }
