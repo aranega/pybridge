@@ -20,11 +20,27 @@ PyBridgeClass >> new [
 
 { #category : #'reflective operations' }
 PyBridgeClass >> new: arguments [
+	arguments ifEmpty: [ ^ self newFromDict: arguments ].
+	((arguments at: 1) isKindOf: Association) ifTrue: [ ^ self newFromDict: arguments ].
+	^ self newFromList: arguments.
+]
+
+{ #category : #private }
+PyBridgeClass >> newFromDict: arguments [
 	| args dict |
 	args := Dictionary new.
 	arguments
 		do: [ :item | args at: item key put: (self encryptValue: item value) ].
 	dict := {(#args -> args).
+	(#clazz -> (self encryptValue: self)).
+	(#nonexisting -> true)} asDictionary.
+	^ self decryptAnswer: (self post: dict action: #create_instance)
+]
+
+{ #category : #private }
+PyBridgeClass >> newFromList: arguments [
+	| dict |
+	dict := {(#args -> arguments).
 	(#clazz -> (self encryptValue: self)).
 	(#nonexisting -> true)} asDictionary.
 	^ self decryptAnswer: (self post: dict action: #create_instance)
