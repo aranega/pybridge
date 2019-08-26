@@ -39,8 +39,9 @@ PyBridgeClass >> newFromDict: arguments [
 
 { #category : #private }
 PyBridgeClass >> newFromList: arguments [
-	| dict |
-	dict := {(#args -> arguments).
+	| args dict |
+	args := arguments collect: [ :item | self encryptValue: item ].
+	dict := {(#args -> args asArray).
 	(#clazz -> (self encryptValue: self)).
 	(#nonexisting -> true)} asDictionary.
 	^ self decryptAnswer: (self post: dict action: #create_instance)
