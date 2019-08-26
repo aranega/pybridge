@@ -20,8 +20,7 @@ class InstanceDict(MutableMapping):
         try:
             return self.objects_map[key]
         except Exception:
-            return self.reverse_objects_map[id(key)]
-            # return self.objects_map[instance_id]
+            return self.__missing__(key)
 
     def __iter__(self):
         return iter(self.objects_map)
@@ -33,6 +32,9 @@ class InstanceDict(MutableMapping):
         self.objects_map[key] = value
         py_id = id(value)
         self.reverse_objects_map[py_id] = key
+
+    def __missing__(self, key):
+        return self.reverse_objects_map[id(key)]
 
 
 # o = list()

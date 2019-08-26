@@ -6,6 +6,8 @@ import types
 from builtins import list
 import sys
 import importlib
+import json
+# from obj import BridgeObject
 
 
 class A(object):
@@ -38,6 +40,8 @@ object_map = InstanceDict()
 @app.route("/<object_id>", methods=["POST"])
 def hello(object_id):
     change = request.json
+    from pprint import pprint
+    pprint(change)
     frame = inspect.currentframe()
     fun = frame.f_globals[change["action"]]
     del change["action"]
@@ -46,6 +50,8 @@ def hello(object_id):
         print("Result", instance)
     except Exception as e:
         return build_exception(e)
+    if fun in (get__dict__, ):
+        return instance
     return build_response(instance)
 
 
@@ -81,6 +87,11 @@ def build_response(o):
         print('Its a type', object_map[o])
         return {"kind": "type", "value": {"object_id": object_map[o]}}
     return {"kind": "object", "value": {"object_id": object_map[o]}}
+
+
+def get__dict__(object_id):
+    o = object_map[object_id]
+    return {k : build_response(v) for k, v in o.items()}
 
 
 def register_literal(object_id, value):
@@ -140,7 +151,7 @@ def create_instance(object_id, class_name=None, clazz=None, args=None, nonexisti
 def instance_setattr(object_id, key, value):
     instance = object_map[object_id]
     if isinstance(value, dict):
-        value = object_map[value["object_id"]]
+        value = decrypt(value)
     key = key[:-1] if key[-1] == ":" else key
     fun = getattr(instance, key, None)
     if callable(fun):
@@ -158,14 +169,18 @@ def instance_getattr(object_id, key):
     key = translation_map.get(key, key)
     value = getattr(instance, key)
     if callable(value) and not isinstance(value, type) and not inspect.ismodule(instance):
-        print("callable")
+        print("I will consider this a callable")
         value = value()
     return value
 
 
 def decrypt(o):
-    if isinstance(o, dict) and "object_id" in o:
-        return object_map[o["object_id"]]
+    try:
+        if isinstance(o, dict) and "object_id" in o:
+            return object_map[o["object_id"]]
+    except Exception:
+        print('Problem here, I dont know the object :\\')
+        raise
     return o
 
 
@@ -198,7 +213,7 @@ def instance_delete(object_id):
         del object_map[object_id]
         print("Deleting", object_id, instance)
     except Exception:
-        print("Object", object_id, "does not exist anymore")
+        print("Object", object_id, "does not exist anymore, instance from a previous session?")
 
 
 app.run()
