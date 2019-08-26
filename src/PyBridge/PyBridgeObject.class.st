@@ -1,8 +1,8 @@
 Class {
 	#name : #PyBridgeObject,
 	#superclass : #Object,
-	#traits : 'PyBridgeIterable + PyBridgeContextManager + PyBridgeIndexable',
-	#classTraits : 'PyBridgeIterable classTrait + PyBridgeContextManager classTrait + PyBridgeIndexable classTrait',
+	#traits : 'PyBridgeIterable + PyBridgeContextManager + PyBridgeIndexable + PyBridgeCallable',
+	#classTraits : 'PyBridgeIterable classTrait + PyBridgeContextManager classTrait + PyBridgeIndexable classTrait + PyBridgeCallable classTrait',
 	#instVars : [
 		'objectId'
 	],
