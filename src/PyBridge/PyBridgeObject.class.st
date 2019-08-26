@@ -156,8 +156,8 @@ PyBridgeObject >> gtInspectorRemoteObject: composite [
 		display: [ :anObject | 
 			| instVars |
 			instVars := OrderedCollection new.
-			[ anObject __dict__ items
-				do: [ :key :val | instVars add: key value -> val ] ]
+			[ anObject __dict__ asNativeDict 
+				keysAndValuesDo: [ :key :val | instVars add: key -> val ] ]
 				on: PyBridgeException
 				do: [ instVars add: 'None' -> 'Object has no __dict__' ].
 			instVars asArray ];
