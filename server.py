@@ -56,7 +56,7 @@ def hello(object_id):
 
 
 def build_exception(e):
-    print(e)
+    print("Exception", e)
     return {
         "kind": "exception",
         "class": e.__class__.__name__,
@@ -113,7 +113,10 @@ def str_to_class(str):
         module = ".".join(segments[:-1])
         class_name = segments[-1]
         module = importlib.import_module(module)
-        return getattr(module, class_name)
+        try:
+            return getattr(module, class_name)
+        except Exception:
+            return importlib.import_module(str)
     try:
         return getattr(sys.modules[__name__], str)
     except Exception:
@@ -160,7 +163,11 @@ def instance_setattr(object_id, key, value):
     print("Set", key, value)
 
 
-translation_map = {"+": "__add__", "-": "__sub__", "/": "__truediv__"}
+translation_map = {
+    "+": "__add__",
+    "-": "__sub__",
+    "/": "__truediv__",
+    "*": "__mul__",}
 
 
 def instance_getattr(object_id, key):
