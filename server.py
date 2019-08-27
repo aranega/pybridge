@@ -223,4 +223,4 @@ def instance_delete(object_id):
         print("Object", object_id, "does not exist anymore, instance from a previous session?")
 
 
-app.run()
+# app.run()
