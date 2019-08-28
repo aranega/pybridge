@@ -38,3 +38,8 @@ PyBridge class >> loadClass: aClassSymbol [
 	"Ask for a class in the remote environment"
 	^ PyBridgeClass new loadClass: aClassSymbol.
 ]
+
+{ #category : #'reflective operations' }
+PyBridge class >> startReverse [
+	^ PyBridgeObject reverseServer start
+]

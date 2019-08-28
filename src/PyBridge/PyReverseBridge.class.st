@@ -186,13 +186,13 @@ PyReverseBridge >> registerRoutes [
 	server
 		POST:
 			'/<obid>'
-				-> [ :req | 
-					[ self dispatchActions: req ]
+				-> [ :req | self dispatchActions: req.
+					"[ self dispatchActions: req ]
 						on: Exception
 						do: [ :e | 
 							{(#kind -> #exception).
 							(#class -> e class name).
-							(#args -> e messageText)} asDictionary ] ]
+							(#args -> e messageText)} asDictionary.] "]
 ]
 
 { #category : #accessing }
