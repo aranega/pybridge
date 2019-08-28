@@ -222,7 +222,7 @@ def decrypt_block(d, delay_key):
             'action': 'register_object',
         }
         import ipdb; ipdb.set_trace()
-        
+
         o.call(req)
         return o
     return object_map[object_id]
@@ -249,6 +249,8 @@ def encrypt_object(o):
     response = {}
     if o is None:
         return NIL_OBJECT
+    if isinstance(o, bytes):
+        return o.decode('utf-8')
     if is_primitive(o):
         return o
     if o not in object_map:

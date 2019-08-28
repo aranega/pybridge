@@ -47,11 +47,11 @@ def hello(object_id):
     try:
         instance = fun(**change)
         print("Result", instance)
+        if fun in (get__dict__, ):
+            return instance
+        return build_response(instance)
     except Exception as e:
         return build_exception(e)
-    if fun in (get__dict__, ):
-        return instance
-    return build_response(instance)
 
 
 def build_exception(e):
@@ -77,8 +77,10 @@ def build_response(o):
     response = {}
     if o is None:
         return NIL_OBJECT
+    if isinstance(o, bytes):
+        return {"kind": "literal", "value": o.decode('utf-8')}
     if is_primitive(o):
-        return {"kind": "literal", "value": o if o is not None else NIL_OBJECT}
+        return {"kind": "literal", "value": o}
     if o not in object_map:
         print('registering', o, id(o))
         object_map[id(o)] = o
