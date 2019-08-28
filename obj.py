@@ -51,10 +51,11 @@ class BridgeObject(object):
         return self
 
     def __add__(self, other):
+        other = other.resolve() if hasattr(other, 'resolve') else other
         change = {
             'action': 'instance_call',
             'key': '+',
-            'args': encrypt_object(other.resolve())
+            'args': encrypt_object(other)
         }
         return decrypt_answer(self.call(change))
 
@@ -176,7 +177,6 @@ def encrypt_object(o):
     if o is None:
         return NIL_OBJECT
     if is_primitive(o):
-        # return {"kind": "literal", "value": o if o is not None else NIL_OBJECT}
         return o
     if o not in object_map:
         print('registering', o, id(o))
