@@ -118,8 +118,8 @@ PyReverseBridge >> registerRoutes [
 								from: (req at: #obid) asInteger ].
 					action = 'register_object'
 						ifTrue: [ result := self
-								registerObject: (entity at: #object_id)
-								on: (entity at: #python_id) ].
+								registerObject: (entity at: #python_id)
+								on: (entity at: #object_id) ].
 					action = 'instance_delete'
 						ifTrue: [ result := self deleteInstance: (entity at: #object_id) ].
 					action = 'register_literal'
