@@ -105,22 +105,25 @@ PyReverseBridge >> registerRoutes [
 		POST:
 			'/<obid>'
 				-> [ :req | 
-					| action result |
-					action := req at: #action.
+					| action result entity |
+					entity := STONJSON fromString: (req entity string).
+					action := entity at: #action.
 					action = 'instance_call'
 						ifTrue: [ result := self
-								instanceCall: (req at: #key) asSymbol
-								on: (req at: #object_id) asInteger ].
+								instanceCall: (entity at: #key) asSymbol
+								on: (entity at: #object_id) ].
 					action = 'get_class'
 						ifTrue: [ result := self
-								loadClass: (req at: #class_name)
+								loadClass: (entity at: #class_name)
 								from: (req at: #obid) asInteger ].
 					action = 'register_object'
 						ifTrue: [ result := self
-								registerObject: (req at: #object_id) asInteger
-								on: (req at: #python_id) asInteger ].
+								registerObject: (entity at: #object_id)
+								on: (entity at: #python_id) ].
 					action = 'instance_delete'
-						ifTrue: [ result := self deleteInstance: (req at: #object_id) asInteger].
+						ifTrue: [ result := self deleteInstance: (entity at: #object_id) ].
+					action = 'register_literal'
+						ifTrue: [ result := self registerLiteral: (entity at: #value) on: (entity at: #object_id) ].
 					result ]
 ]
 
