@@ -14,13 +14,22 @@ Class {
 { #category : #accessing }
 PyReverseBridge >> decodeValue: anObject [
 	| o |
-	anObject isDictionary ifFalse: [ ^ anObject ].
+	anObject isDictionary
+		ifFalse: [ ^ anObject ].
 	o := anObject.
-	anObject at: #kind ifPresent: [
-		(anObject at: #kind) = #nil_object ifTrue: [ ^ nil ].
-		o := anObject at: #value.
-	].
-	^ self instanceMap at: (o at: #object_id)
+	anObject
+		at: #kind
+		ifPresent: [ (anObject at: #kind) = #nil_object
+				ifTrue: [ ^ nil ].
+			o := anObject at: #value ].
+	^ self instanceMap
+		at: (o at: #object_id)
+		ifAbsentPut: [ | newObj dict |
+			newObj := PyBridgeObject new.
+			PyBridgeObject instanceMap at: newObj bridgeUUID put: newObj.
+			dict := {(#python_id -> (o at: #object_id))} asDictionary.
+			newObj post: dict action: #register_object.
+			newObj ]
 ]
 
 { #category : #accessing }
