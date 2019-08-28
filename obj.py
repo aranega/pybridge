@@ -51,11 +51,10 @@ class BridgeObject(object):
         return self
 
     def __add__(self, other):
-        print("Add gen", other.value)
         change = {
             'action': 'instance_call',
             'key': '+',
-            'args': [encrypt_object(other.resolve())]
+            'args': encrypt_object(other.resolve())
         }
         return decrypt_answer(self.call(change))
 
@@ -121,7 +120,6 @@ class BridgeDelayObject(object):
         return self.resolve(delay_key=key)
 
     def __add__(self, other):
-        print(f'Addition no call, SEND ATTRIBUTE ASKING {self.key} {other.value}')
         left = self.resolve()
         return left.__add__(other)
 
@@ -185,5 +183,5 @@ def encrypt_object(o):
         object_map[id(o)] = o
     if isinstance(o, type):
         print('Its a type', object_map[o])
-        return {"kind": "type", "value": {"object_id": object_map[o]}}
-    return {"kind": "object", "value": {"object_id": object_map[o]}}
+        return {"object_id": object_map[o]}
+    return {"object_id": object_map[o]}
