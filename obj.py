@@ -15,7 +15,7 @@ class BridgeObject(object):
         self.session = requests.post
 
     def __getattr__(self, key):
-        return BridgeDelayObject(self, key, self.session)
+        return BridgeDelayObject(self, key)
 
     def __call__(self, *args, **kwargs):
         print("Calling!")
@@ -93,15 +93,26 @@ class PharoLiteral(BridgeLiteral):
         self.call(req)
 
 
+class BridgeException(Exception, BridgeObject):
+    def __init__(self, class_name, *args, **kwargs):
+        Exception.__init__(self, *args, **kwargs)
+        BridgeObject.__init__(self, *args, **kwargs)
+        self.class_name = class_name
+        print(self.id_)
+
+
 class BridgeDelayObject(object):
-    def __init__(self, instance, key, session):
+    def __init__(self, instance, key):
         self.instance = instance
         self.key = key
-        self.session = session
 
     @property
     def id_(self):
-        return self.id_
+        return self.instance.id_
+
+    @property
+    def session(self):
+        return self.instance.session
 
     def perform_call(self, *args, **kwargs):
         change = {
@@ -127,6 +138,7 @@ class BridgeDelayObject(object):
             'action': 'instance_call',
             'key': self.key
         }
+        print("resolve key", self.key)
         return decrypt_answer(self.instance.call(change), delay_key)
 
     def __getattr__(self, key):
@@ -150,7 +162,7 @@ def decrypt_literal(d, delay_key):
     value = d["value"]
     o = BridgeLiteral(value=value)
     if delay_key:
-        o = BridgeDelayObject(o, delay_key, o.session)
+        o = BridgeDelayObject(o, delay_key)
     object_map[o.id_] = o
     req ={
         'action': 'register_literal',
@@ -165,7 +177,7 @@ def decrypt_object(d, delay_key):
         o = BridgeObject()
         object_map[object_id] = o
         if delay_key:
-            o = BridgeDelayObject(o, delay_key, o.session)
+            o = BridgeDelayObject(o, delay_key)
         req ={
             'python_id': object_id,
             'action': 'register_object',
@@ -181,7 +193,7 @@ def decrypt_class(d, delay_key):
         o = BridgeClass()
         object_map[object_id] = o
         if delay_key:
-            o = BridgeDelayObject(o, delay_key, o.session)
+            o = BridgeDelayObject(o, delay_key)
         req ={
             'python_id': object_id,
             'action': 'register_object',
@@ -191,11 +203,18 @@ def decrypt_class(d, delay_key):
     return object_map[object_id]
 
 
+def decrypt_exception(d, delay_key):
+    name = d['class']
+    exception = BridgeException(name, "{}({})".format(name, d['args']))
+    raise exception
+
+
 decrypt_map = {
     "literal": decrypt_literal,
     "object": decrypt_object,
     "nil_object": lambda x, delay_key=None: None,
     "type": decrypt_class,
+    "exception": decrypt_exception,
 }
 
 def encrypt_object(o):
