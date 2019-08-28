@@ -1,5 +1,5 @@
 import requests
-from server import object_map
+from server import object_map, NIL_OBJECT, is_primitive
 
 
 class PharoBridge(object):
@@ -47,6 +47,18 @@ class BridgeObject(object):
         }
         self.call(delreq)
 
+    def resolve(self):
+        return self
+
+    def __add__(self, other):
+        print("Add gen", other.value)
+        change = {
+            'action': 'instance_call',
+            'key': '+',
+            'args': [encrypt_object(other.resolve())]
+        }
+        return decrypt_answer(self.call(change))
+
 
 class BridgeClass(BridgeObject):
     def load(self, name):
@@ -65,18 +77,6 @@ class BridgeClass(BridgeObject):
         }
         return decrypt_answer(self.call(req))
 
-    def __add__(self, other):
-        change = {
-            'action': 'instance_call',
-            'key': '+'
-        }
-        myid = self.id_
-        answer = self.session(f"http://127.0.0.1:4321/{myid}", json=change)
-        left = decrypt_answer(answer.json())
-        left.__add__()
-
-        return decrypt_answer(answer.json())
-
 
 class BridgeLiteral(BridgeObject):
     def __init__(self, value, *args, **kwargs):
@@ -94,42 +94,46 @@ class BridgeDelayObject(object):
     def id_(self):
         return self.id_
 
-    def __call__(self, *args, **kwargs):
+    def perform_call(self, *args, **kwargs):
         change = {
             'action': 'instance_call',
             'key': self.key,
-            'args': None
+        }
+        if args:
+            args = {self.key + ':': encrypt_object(args[0])}
+            for k, v in kwargs.items():
+                args[k + ':'] = encrypt_object(v)
+            change['args'] = args
+            change['order'] = {(i + 1): k for i, k in enumerate(args.keys())}
+        return decrypt_answer(self.instance.call(change))
+
+    def __call__(self, *args, **kwargs):
+        return self.perform_call(*args, **kwargs)
+
+    def resolve(self, delay_key=False):
+        change = {
+            'action': 'instance_call',
+            'key': self.key
         }
         return decrypt_answer(self.instance.call(change))
 
     def __getattr__(self, key):
-        change = {
-            'action': 'instance_call',
-            'key': self.key
-        }
-        return decrypt_answer(self.instance.call(change), delay_key=key)
+        return self.resolve(delay_key=key)
 
     def __add__(self, other):
-        print(f'Addition no call, SEND ATTRIBUTE ASKING {self.key}')
-        change = {
-            'action': 'instance_call',
-            'key': self.key
-        }
-        left = decrypt_answer(self.instance.call(change))
+        print(f'Addition no call, SEND ATTRIBUTE ASKING {self.key} {other.value}')
+        left = self.resolve()
         return left.__add__(other)
 
     def __str__(self):
-        # print(f'str no call, SEND ATTRIBUTE ASKING {self.key}')
-        change = {
-            'action': 'instance_call',
-            'key': self.key
-        }
-        left = decrypt_answer(self.instance.call(change))
+        left = self.resolve()
         return left.__str__()
 
 
 def decrypt_answer(d, delay_key=None):
-    return decrypt_map[d["kind"]](d, delay_key)
+    if isinstance(d, dict):
+        return decrypt_map[d["kind"]](d, delay_key)
+    return decrypt_literal({"value": d}, delay_key)
 
 def decrypt_literal(d, delay_key):
     value = d["value"]
@@ -169,3 +173,17 @@ Point = PharoBridge.load('Point')
 # p = Point()
 
 # print(p)
+def encrypt_object(o):
+    response = {}
+    if o is None:
+        return NIL_OBJECT
+    if is_primitive(o):
+        # return {"kind": "literal", "value": o if o is not None else NIL_OBJECT}
+        return o
+    if o not in object_map:
+        print('registering', o, id(o))
+        object_map[id(o)] = o
+    if isinstance(o, type):
+        print('Its a type', object_map[o])
+        return {"kind": "type", "value": {"object_id": object_map[o]}}
+    return {"kind": "object", "value": {"object_id": object_map[o]}}
