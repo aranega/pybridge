@@ -86,6 +86,12 @@ PyReverseBridge >> objectId: anObject [
 ]
 
 { #category : #accessing }
+PyReverseBridge >> registerLiteral: literal on: pythonId [
+	self instanceMap at: pythonId put: literal.
+	^ pythonId
+]
+
+{ #category : #accessing }
 PyReverseBridge >> registerObject: objectId on: pythonId [	
 	| instance |
 	instance := self instanceMap at: objectId.
