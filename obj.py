@@ -51,7 +51,6 @@ class BridgeObject(object):
         return self
 
     def __add__(self, other):
-        other = other.resolve() if hasattr(other, 'resolve') else other
         change = {
             'action': 'instance_call',
             'key': '+',
@@ -173,6 +172,7 @@ Point = PharoBridge.load('Point')
 
 # print(p)
 def encrypt_object(o):
+    o = o.resolve() if isinstance(o, (BridgeObject, BridgeDelayObject)) else o
     response = {}
     if o is None:
         return NIL_OBJECT
