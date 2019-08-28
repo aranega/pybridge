@@ -141,7 +141,7 @@ PyBridgeObject >> doesNotUnderstand: aMessage [
 
 { #category : #'reflective operations' }
 PyBridgeObject >> encryptValue: aValue [
-	| id |
+	| id kind |
 	aValue isLiteral
 		ifTrue: [ ^ aValue ].
 	aValue isDictionary
@@ -149,7 +149,13 @@ PyBridgeObject >> encryptValue: aValue [
 	id := self bridgeUUIDOf: aValue.
 	self reverseServer isRunning
 		ifTrue: [ self reverseServer instanceMap at: id ifAbsentPut: [ aValue ] ].
-	^ {(#object_id -> (self bridgeUUIDOf: aValue))} asDictionary
+	aValue isBlock
+		ifTrue: [ kind := #block ]
+		ifFalse: [ aValue isClass
+				ifTrue: [ kind := #type ]
+				ifFalse: [ kind := #object ] ].
+	^ {(#object_id -> (self bridgeUUIDOf: aValue)).
+	(#kind -> kind)} asDictionary
 ]
 
 { #category : #'reflective operations' }
