@@ -57,9 +57,6 @@ class BridgeObject(object):
         }
         return decrypt_answer(self.call(change))
 
-    def _ipython_canary_method_should_not_exist_(self, *args, **kwargs):
-        pass
-
 
 class BridgeClass(BridgeObject):
     def load(self, name):
@@ -83,6 +80,17 @@ class BridgeLiteral(BridgeObject):
     def __init__(self, value, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.value = value
+
+
+class PharoLiteral(BridgeLiteral):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        req ={
+            'action': 'register_literal',
+            'value': self.value
+        }
+        object_map[self.id_] = self
+        self.call(req)
 
 
 class BridgeDelayObject(object):
@@ -115,7 +123,6 @@ class BridgeDelayObject(object):
         return self.perform_call(*args, **kwargs)
 
     def resolve(self, delay_key=None):
-        print('resolve,for', self.key)
         change = {
             'action': 'instance_call',
             'key': self.key
@@ -132,9 +139,6 @@ class BridgeDelayObject(object):
     def __str__(self):
         left = self.resolve()
         return left.__str__()
-
-    def _ipython_canary_method_should_not_exist_(self, *args, **kwargs):
-        pass
 
 
 def decrypt_answer(d, delay_key=None):
@@ -171,10 +175,27 @@ def decrypt_object(d, delay_key):
     return object_map[object_id]
 
 
+def decrypt_class(d, delay_key):
+    object_id = d["value"]["object_id"]
+    if object_id not in object_map:
+        o = BridgeClass()
+        object_map[object_id] = o
+        if delay_key:
+            o = BridgeDelayObject(o, delay_key, o.session)
+        req ={
+            'python_id': object_id,
+            'action': 'register_object',
+        }
+        o.call(req)
+        return o
+    return object_map[object_id]
+
+
 decrypt_map = {
     "literal": decrypt_literal,
     "object": decrypt_object,
     "nil_object": lambda x, delay_key=None: None,
+    "type": decrypt_class,
 }
 
 def encrypt_object(o):
