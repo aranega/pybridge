@@ -17,7 +17,12 @@ class BridgeObject(object):
         return BridgeDelayObject(self, key)
 
     def __call__(self, *args, **kwargs):
-        print("Calling!")
+        change = {
+            'action': 'instance_call',
+            'key': '__call__:',
+            'args':  [encrypt_object(o) for o in args]
+        }
+        return decrypt_answer(self.call(change))
 
     def call(self, data):
         data["object_id"] = self.id_
@@ -221,8 +226,6 @@ def decrypt_block(d, delay_key):
             'python_id': object_id,
             'action': 'register_object',
         }
-        import ipdb; ipdb.set_trace()
-
         o.call(req)
         return o
     return object_map[object_id]

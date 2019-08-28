@@ -189,7 +189,7 @@ def decrypt(o):
     except Exception:
         print('Problem here, I dont know the object, I put a PharoObject instead')
         from obj import decrypt_answer
-        o = decrypt_answer({'kind': 'object', 'value': o})
+        o = decrypt_answer({'kind': o['kind'], 'value': o})
         return o
     return o
 
