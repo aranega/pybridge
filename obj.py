@@ -1,11 +1,11 @@
 import requests
 from server import object_map
 
+
 class PharoBridge(object):
     @staticmethod
     def load(clazz):
         return BridgeClass().load(clazz)
-
 
 
 class BridgeObject(object):
@@ -15,7 +15,6 @@ class BridgeObject(object):
         self.session = requests.post
 
     def __getattr__(self, key):
-        print('key', key)
         return BridgeDelayObject(self, key, self.session)
 
     def __call__(self, *args, **kwargs):
@@ -24,14 +23,14 @@ class BridgeObject(object):
 
     def call(self, data):
         myid = self.id_
-        answer = self.session(f"http://127.0.0.1:4321/{myid}", data=data)
+        answer = self.session(f"http://127.0.0.1:4321/{myid}", json=data)
         return answer.json()
 
     def __str__(self):
         change = {
             'action': 'instance_call',
             'object_id': self.id_,
-            'key': 'asString'
+            'key': 'printString'
         }
         return decrypt_answer(self.call(change)).value
 
@@ -60,19 +59,12 @@ class BridgeClass(BridgeObject):
         return self
 
     def __call__(self, *args, **kwargs):
-        print("Creating instance of a class")
         req = {
             'action': 'instance_call',
             'object_id': self.id_,
             'key': 'new',
         }
         return decrypt_answer(self.call(req))
-
-
-class BridgeLiteral(BridgeObject):
-    def __init__(self, value, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.value = value
 
     def __add__(self, other):
         change = {
@@ -81,11 +73,17 @@ class BridgeLiteral(BridgeObject):
             'key': '+'
         }
         myid = self.id_
-        answer = self.session(f"http://127.0.0.1:4321/{myid}", data=change)
+        answer = self.session(f"http://127.0.0.1:4321/{myid}", json=change)
         left = decrypt_answer(answer.json())
         left.__add__()
 
         return decrypt_answer(answer.json())
+
+
+class BridgeLiteral(BridgeObject):
+    def __init__(self, value, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.value = value
 
 
 class BridgeDelayObject(object):
@@ -96,53 +94,54 @@ class BridgeDelayObject(object):
 
     @property
     def id_(self):
-        return self.instance.id_
+        return self.id_
 
     def __call__(self, *args, **kwargs):
         change = {
             'action': 'instance_call',
-            'object_id': self.id_,
+            'object_id': self.instance.id_,
             'key': self.key,
             'args': None
         }
-        myid = self.id_
-        answer = self.session(f"http://127.0.0.1:4321/{myid}", data=change)
-        return decrypt_answer(answer.json())
+        return decrypt_answer(self.instance.call(change))
+        # myid = self.id_
+        # answer = self.session(f"http://127.0.0.1:4321/{myid}", json=change)
+        # return decrypt_answer(answer.json())
 
     def __getattr__(self, key):
         change = {
             'action': 'instance_call',
-            'object_id': self.id_,
+            'object_id': self.instance.id_,
             'key': self.key
         }
-        myid = self.id_
-        answer = self.session(f"http://127.0.0.1:4321/{myid}", data=change)
-        return decrypt_answer(answer.json(), delay_key=key)
+        # myid = self.id_
+        # answer = self.session(f"http://127.0.0.1:4321/{myid}", json=change)
+        return decrypt_answer(self.instance.call(change), delay_key=key)
 
     def __add__(self, other):
         print(f'Addition no call, SEND ATTRIBUTE ASKING {self.key}')
         change = {
             'action': 'instance_call',
-            'object_id': self.id_,
+            'object_id': self.instance.id_,
             'key': self.key
         }
         myid = self.id_
         print(myid)
-        answer = self.session(f"http://127.0.0.1:4321/{myid}", data=change)
+        answer = self.session(f"http://127.0.0.1:4321/{myid}", json=change)
         left = decrypt_answer(answer.json())
         left.__add__(other)
         return decrypt_answer(answer.json())
 
     def __str__(self):
-        print(f'str no call, SEND ATTRIBUTE ASKING {self.key}')
+        # print(f'str no call, SEND ATTRIBUTE ASKING {self.key}')
         change = {
             'action': 'instance_call',
-            'object_id': self.id_,
+            'object_id': self.instance.id_,
             'key': self.key
         }
-        myid = self.id_
-        answer = self.session(f"http://127.0.0.1:4321/{myid}", data=change)
-        left = decrypt_answer(answer.json())
+        # myid = self.id_
+        # answer = self.session(f"http://127.0.0.1:4321/{myid}", json=change)
+        left = decrypt_answer(self.instance.call(change))
         return left.__str__()
 
 
@@ -150,10 +149,18 @@ def decrypt_answer(d, delay_key=None):
     return decrypt_map[d["kind"]](d, delay_key)
 
 def decrypt_literal(d, delay_key):
-    res = BridgeLiteral(d["value"])
+    value = d["value"]
+    o = BridgeLiteral(value=value)
     if delay_key:
-        return BridgeDelayObject(res, delay_key, res.session)
-    return res
+        o = BridgeDelayObject(res, delay_key, res.session)
+    object_map[o.id_] = o
+    req ={
+        'action': 'register_literal',
+        'object_id': o.id_,
+        'value': value
+    }
+    o.call(req)
+    return o
 
 def decrypt_object(d, delay_key):
     object_id = d["value"]["object_id"]
