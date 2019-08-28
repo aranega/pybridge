@@ -5,8 +5,8 @@ class Example(object):
     def stuff(self, other):
         print("Here")
         res = other.callback(self)
-        return  res + 42
+        return res + 42
 
     def other(self, i):
         print("\nIn Pytho\n", i)
-        return 42
+        return 123

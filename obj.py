@@ -99,6 +99,15 @@ class BridgeException(Exception, BridgeObject):
         self.class_name = class_name
         print(self.id_)
 
+class BridgeBlock(BridgeObject):
+    def __call__(self, *args, **kwargs):
+        req = {
+            'action': 'instance_call',
+            'key': 'valueWithArguments:',
+            'args': [encrypt_object(o) for o in args]
+        }
+        return decrypt_answer(self.call(req))
+
 
 class BridgeDelayObject(object):
     def __init__(self, instance, key):
@@ -137,7 +146,6 @@ class BridgeDelayObject(object):
             'action': 'instance_call',
             'key': self.key
         }
-        print("resolve key", self.key)
         return decrypt_answer(self.instance.call(change), delay_key)
 
     def __getattr__(self, key):
@@ -202,6 +210,24 @@ def decrypt_class(d, delay_key):
     return object_map[object_id]
 
 
+def decrypt_block(d, delay_key):
+    object_id = d["value"]["object_id"]
+    if object_id not in object_map:
+        o = BridgeBlock()
+        object_map[object_id] = o
+        if delay_key:
+            o = BridgeDelayObject(o, delay_key)
+        req ={
+            'python_id': object_id,
+            'action': 'register_object',
+        }
+        import ipdb; ipdb.set_trace()
+        
+        o.call(req)
+        return o
+    return object_map[object_id]
+
+
 def decrypt_exception(d, delay_key):
     name = d['class']
     exception = BridgeException(name, "{}({})".format(name, d['args']))
@@ -214,7 +240,9 @@ decrypt_map = {
     "nil_object": lambda x, delay_key=None: None,
     "type": decrypt_class,
     "exception": decrypt_exception,
+    "block": decrypt_block,
 }
+
 
 def encrypt_object(o):
     o = o.resolve() if isinstance(o, (BridgeObject, BridgeDelayObject)) else o
