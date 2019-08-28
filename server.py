@@ -7,7 +7,7 @@ from builtins import list
 import sys
 import importlib
 import json
-# from obj import BridgeObject
+from obj import decrypt_answer
 
 
 class A(object):
@@ -186,8 +186,9 @@ def decrypt(o):
         if isinstance(o, dict) and "object_id" in o:
             return object_map[o["object_id"]]
     except Exception:
-        print('Problem here, I dont know the object :\\')
-        raise
+        print('Problem here, I dont know the object, I put a PharoObject instead')
+        o = decrypt_answer({'kind': 'object', 'value': o})
+        return o
     return o
 
 

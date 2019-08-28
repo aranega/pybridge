@@ -1,5 +1,4 @@
 import requests
-from server import object_map, NIL_OBJECT, is_primitive
 
 
 class PharoBridge(object):
@@ -233,5 +232,8 @@ def encrypt_object(o):
     return {"object_id": object_map[o]}
 
 
-Point = PharoBridge.load('Point')
-Smalltalk = PharoBridge.load('Smalltalk')
+
+from server import object_map, NIL_OBJECT, is_primitive
+
+# Point = PharoBridge.load('Point')
+# Smalltalk = PharoBridge.load('Smalltalk')
