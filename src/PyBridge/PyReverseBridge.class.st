@@ -79,6 +79,13 @@ PyReverseBridge >> dispatchActions: req [
 ]
 
 { #category : #accessing }
+PyReverseBridge >> encryptBlock: anObject [
+	^ {(#kind -> #block).
+	(#value -> {(#object_id -> (self objectId: anObject))} asDictionary)}
+		asDictionary
+]
+
+{ #category : #accessing }
 PyReverseBridge >> encryptClass: aClass [
 	^ {(#kind -> #type).
 	(#value -> {(#object_id -> (self objectId: aClass))} asDictionary)}
@@ -108,6 +115,8 @@ PyReverseBridge >> encryptValue: anObject [
 	anObject isNil ifTrue: [ ^ self encryptNil ].
 	(anObject isLiteral and: [ anObject isSymbol not ])
 		ifTrue: [ ^ anObject ].
+	anObject isBlock
+		ifTrue: [ ^ self encryptBlock: anObject ].
 	anObject isClass
 		ifTrue: [ ^ self encryptClass: anObject ].
 	^ self encryptObject: anObject
@@ -195,13 +204,13 @@ PyReverseBridge >> registerRoutes [
 	server
 		POST:
 			'/<obid>'
-				-> [ :req | self dispatchActions: req.
-					"[ self dispatchActions: req ]
+				-> [ :req | 
+					[ self dispatchActions: req ]
 						on: Exception
 						do: [ :e | 
 							{(#kind -> #exception).
 							(#class -> e class name).
-							(#args -> e messageText)} asDictionary.] "]
+							(#args -> e messageText)} asDictionary ] ]
 ]
 
 { #category : #accessing }
