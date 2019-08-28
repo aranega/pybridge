@@ -172,6 +172,11 @@ PyReverseBridge >> instanceMap [
 ]
 
 { #category : #accessing }
+PyReverseBridge >> isRunning [
+	^ server isNotNil and: [ server server isRunning ]
+]
+
+{ #category : #accessing }
 PyReverseBridge >> loadClass: className from: objectId [
 	| class |
 	class := Smalltalk at: (className asSymbol).

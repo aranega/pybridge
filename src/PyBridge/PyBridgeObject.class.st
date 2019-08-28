@@ -147,7 +147,7 @@ PyBridgeObject >> encryptValue: aValue [
 	aValue isDictionary
 		ifTrue: [ ^ aValue ].
 	id := self bridgeUUIDOf: aValue.
-	self reverseServer server server isRunning
+	self reverseServer isRunning
 		ifTrue: [ self reverseServer instanceMap at: id ifAbsentPut: [ aValue ] ].
 	^ {(#object_id -> (self bridgeUUIDOf: aValue))} asDictionary
 ]
