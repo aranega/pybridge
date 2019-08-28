@@ -34,6 +34,42 @@ PyReverseBridge >> deleteInstance: objectId [
 ]
 
 { #category : #accessing }
+PyReverseBridge >> dispatchActions: req [
+	| action entity |
+	entity := STONJSON fromString: req entity string.
+	action := entity at: #action.
+	action = 'instance_call'
+		ifTrue: [ ^ (entity includesKey: #args)
+				ifFalse: [ self
+						instanceCall: (entity at: #key) asSymbol
+						on: (entity at: #object_id) ]
+				ifTrue: [ (entity includesKey: #order)
+						ifTrue: [ self
+								instanceCall: (entity at: #key) asSymbol
+								on: (entity at: #object_id)
+								withArgs: (entity at: #args)
+								orderedAs: (entity at: #order) ]
+						ifFalse: [ self
+								instanceCall: (entity at: #key) asSymbol
+								on: (entity at: #object_id)
+								withArg: (entity at: #args) ] ] ].
+	action = 'get_class'
+		ifTrue: [ ^ self
+				loadClass: (entity at: #class_name)
+				from: (req at: #obid) asInteger ].
+	action = 'register_object'
+		ifTrue: [ ^ self
+				registerObject: (entity at: #python_id)
+				on: (entity at: #object_id) ].
+	action = 'instance_delete'
+		ifTrue: [ ^ self deleteInstance: (entity at: #object_id) ].
+	action = 'register_literal'
+		ifTrue: [ ^ self
+				registerLiteral: (entity at: #value)
+				on: (entity at: #object_id) ]
+]
+
+{ #category : #accessing }
 PyReverseBridge >> encryptClass: aClass [
 	^ {(#kind -> #type).
 	(#value -> {(#object_id -> (self objectId: aClass))} asDictionary)}
@@ -151,39 +187,12 @@ PyReverseBridge >> registerRoutes [
 		POST:
 			'/<obid>'
 				-> [ :req | 
-					| action result entity |
-					entity := STONJSON fromString: req entity string.
-					action := entity at: #action.
-					action = 'instance_call'
-						ifTrue: [ result := (entity includesKey: #args)
-								ifFalse: [ self
-										instanceCall: (entity at: #key) asSymbol
-										on: (entity at: #object_id) ]
-								ifTrue: [ (entity includesKey: #order)
-										ifTrue: [ self
-												instanceCall: (entity at: #key) asSymbol
-												on: (entity at: #object_id)
-												withArgs: (entity at: #args)
-												orderedAs: (entity at: #order) ]
-										ifFalse: [ self
-												instanceCall: (entity at: #key) asSymbol
-												on: (entity at: #object_id)
-												withArg: (entity at: #args) ] ] ].
-					action = 'get_class'
-						ifTrue: [ result := self
-								loadClass: (entity at: #class_name)
-								from: (req at: #obid) asInteger ].
-					action = 'register_object'
-						ifTrue: [ result := self
-								registerObject: (entity at: #python_id)
-								on: (entity at: #object_id) ].
-					action = 'instance_delete'
-						ifTrue: [ result := self deleteInstance: (entity at: #object_id) ].
-					action = 'register_literal'
-						ifTrue: [ result := self
-								registerLiteral: (entity at: #value)
-								on: (entity at: #object_id) ].
-					result ]
+					[ self dispatchActions: req ]
+						on: Exception
+						do: [ :e | 
+							{(#kind -> #exception).
+							(#class -> e class name).
+							(#args -> e messageText)} asDictionary ] ]
 ]
 
 { #category : #accessing }
