@@ -106,6 +106,12 @@ class BridgeException(Exception, BridgeObject):
 
 class BridgeBlock(BridgeObject):
     def __call__(self, *args, **kwargs):
+        if not args:
+            req = {
+                'action': 'instance_call',
+                'key': 'value',
+            }
+            return decrypt_answer(self.call(req))
         req = {
             'action': 'instance_call',
             'key': 'valueWithArguments:',

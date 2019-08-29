@@ -1,12 +1,9 @@
 class Example(object):
-    def __init__(self):
-        pass
-
     def stuff(self, other):
         print("Here")
         # res = other.callback(self)
-        res = other(self)
-        res.crLog('called From python ' + str(other))
+        res = other()
+        res.crLog('From Python here is the executed method' + str(other))
         return 42
 
     def other(self, i):

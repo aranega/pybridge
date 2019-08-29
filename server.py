@@ -39,8 +39,8 @@ object_map = InstanceDict()
 @app.route("/<object_id>", methods=["POST"])
 def hello(object_id):
     change = request.json
-    from pprint import pprint
-    pprint(change)
+    # from pprint import pprint
+    # pprint(change)
     frame = inspect.currentframe()
     fun = frame.f_globals[change["action"]]
     del change["action"]
@@ -177,7 +177,7 @@ def instance_getattr(object_id, key):
     key = translation_map.get(key, key)
     value = getattr(instance, key)
     if callable(value) and not isinstance(value, type) and not inspect.ismodule(instance):
-        print("I will consider this a callable")
+        # print("I will consider this a callable")
         value = value()
     return value
 
@@ -227,4 +227,6 @@ def instance_delete(object_id):
 
 
 if __name__ == '__main__':
-    app.run()
+    # from werkzeug.serving import run_simple
+    app.run(threaded=True)
+    # app.run(debug=False, threaded=True)
