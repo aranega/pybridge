@@ -22,8 +22,20 @@ PyBridgeObject class >> instanceMap [
 ]
 
 { #category : #'reflective operations' }
+PyBridgeObject class >> removeServer [
+	reverseServer ifNil: [ ^ self ]. 
+	reverseServer stop.
+	reverseServer := nil
+]
+
+{ #category : #'reflective operations' }
 PyBridgeObject class >> reverseServer [
-	^ reverseServer := reverseServer ifNil: [ PyReverseBridge new ]
+	^ reverseServer
+]
+
+{ #category : #'reflective operations' }
+PyBridgeObject class >> reverseServer: aServer [
+	reverseServer := aServer
 ]
 
 { #category : #testing }
@@ -147,8 +159,7 @@ PyBridgeObject >> encryptValue: aValue [
 	aValue isDictionary
 		ifTrue: [ ^ aValue ].
 	id := self bridgeUUIDOf: aValue.
-	self reverseServer isRunning
-		ifTrue: [ self reverseServer instanceMap at: id ifAbsentPut: [ aValue ] ].
+	self reverseServerIsRunning ifTrue: [ self reverseServer instanceMap at: id ifAbsentPut: [ aValue ] ].
 	aValue isBlock
 		ifTrue: [ kind := #block ]
 		ifFalse: [ aValue isClass
@@ -228,4 +239,9 @@ PyBridgeObject >> printString [
 { #category : #'reflective operations' }
 PyBridgeObject >> reverseServer [
 	^ self class reverseServer 
+]
+
+{ #category : #'reflective operations' }
+PyBridgeObject >> reverseServerIsRunning [
+	^ self reverseServer isNotNil and: [ self reverseServer isRunning ]
 ]

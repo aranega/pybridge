@@ -212,12 +212,12 @@ PyReverseBridge >> registerRoutes [
 		POST:
 			'/<obid>'
 				-> [ :req | 
-					[ self dispatchActions: req ]
-						on: Exception
+					[ self dispatchActions: req ] value
+						"on: Exception
 						do: [ :e | 
 							{(#kind -> #exception).
 							(#class -> e class name).
-							(#args -> e messageText)} asDictionary ] ]
+							(#args -> e messageText)} asDictionary ] "]
 ]
 
 { #category : #accessing }
@@ -238,5 +238,6 @@ PyReverseBridge >> start [
 
 { #category : #accessing }
 PyReverseBridge >> stop [
+	self isRunning ifFalse: [ ^ self ].
 	server stop
 ]

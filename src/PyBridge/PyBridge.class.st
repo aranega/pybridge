@@ -41,5 +41,13 @@ PyBridge class >> loadClass: aClassSymbol [
 
 { #category : #'reflective operations' }
 PyBridge class >> startReverse [
-	^ PyBridgeObject reverseServer start
+	| server |
+	server := PyReverseBridge new.
+	PyBridgeObject reverseServer: server.
+	^ server start
+]
+
+{ #category : #'reflective operations' }
+PyBridge class >> stopReverse [
+	PyBridgeObject removeServer
 ]
