@@ -3,9 +3,9 @@ class Example(object):
         print("Here")
         # res = other.callback(self)
         res = other()
-        res.crLog('From Python here is the executed method' + str(other))
+        res.crLog('Log from Python here what I got as parameter ' + str(other))
         return 42
 
     def other(self, i):
-        print("\nIn Pytho\n", i)
+        print("\nIn Python\n", i)
         return 123

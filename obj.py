@@ -1,4 +1,5 @@
 import requests
+import types
 
 
 class PharoBridge(object):
@@ -61,6 +62,14 @@ class BridgeObject(object):
         }
         return decrypt_answer(self.call(change))
 
+    def __getitem__(self, key):
+        change = {
+            'action': 'instance_call',
+            'key': 'at:',
+            'args': encrypt_object(key)
+        }
+        return decrypt_answer(self.call(change))
+
 
 class BridgeClass(BridgeObject):
     def load(self, name):
@@ -118,6 +127,12 @@ class BridgeBlock(BridgeObject):
             'args': [encrypt_object(o) for o in args]
         }
         return decrypt_answer(self.call(req))
+
+    def __get__(self, obj, objtype=None):
+        print(obj, objtype)
+        if obj is None:
+            return self
+        return types.MethodType(self, obj)
 
 
 class BridgeDelayObject(object):

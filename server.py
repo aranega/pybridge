@@ -39,8 +39,8 @@ object_map = InstanceDict()
 @app.route("/<object_id>", methods=["POST"])
 def hello(object_id):
     change = request.json
-    # from pprint import pprint
-    # pprint(change)
+    from pprint import pprint
+    pprint(change)
     frame = inspect.currentframe()
     fun = frame.f_globals[change["action"]]
     del change["action"]
@@ -49,7 +49,9 @@ def hello(object_id):
         print("Result", instance)
         if fun in (get__dict__, ):
             return instance
-        return build_response(instance)
+        res = build_response(instance)
+        pprint(res)
+        return res
     except Exception as e:
         return build_exception(e)
 
