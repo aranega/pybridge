@@ -129,7 +129,6 @@ class BridgeBlock(BridgeObject):
         return decrypt_answer(self.call(req))
 
     def __get__(self, obj, objtype=None):
-        print(obj, objtype)
         if obj is None:
             return self
         return types.MethodType(self, obj)
