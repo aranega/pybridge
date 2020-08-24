@@ -17,6 +17,16 @@ class BridgeObject(object):
     def __getattr__(self, key):
         return BridgeDelayObject(self, key)
 
+    def __setattr__(self, key, value):
+        if key in ('id_', 'isCalled', 'session'):
+            return object.__setattr__(self, key, value)
+        change = {
+            'action': 'instance_call',
+            'key': f'{key}:',
+            'args':  [encrypt_object(value)]
+        }
+        return decrypt_answer(self.call(change))
+
     def __call__(self, *args, **kwargs):
         change = {
             'action': 'instance_call',
