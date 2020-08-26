@@ -14,6 +14,8 @@ Class {
 { #category : #accessing }
 PyReverseBridge >> decodeValue: anObject [
 	| o |
+	anObject isArray
+		ifTrue: [ ^ anObject collect: [ :e | self decodeValue: e ] ].
 	anObject isDictionary
 		ifFalse: [ ^ anObject ].
 	o := anObject.
@@ -137,7 +139,7 @@ PyReverseBridge >> instanceCall: key on: objectId withArg: anObject [
 	| instance res args |
 	instance := self instanceMap at: objectId.
 	args := anObject isArray
-		ifTrue: [ anObject collect: [ :e | self decodeValue: e ] ]
+		ifTrue: [ (self decodeValue: anObject) ]
 		ifFalse: [ {(self decodeValue: anObject)} asArray].
 	res := instance perform: key withArguments: args.
 	self instanceMap at: (self objectId: res) ifAbsentPut: [ res ].
