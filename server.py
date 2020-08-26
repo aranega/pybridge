@@ -8,6 +8,8 @@ import sys
 import importlib
 import json
 
+from tools import object_map
+
 
 class A(object):
     def __init__(self, val=0):
@@ -33,7 +35,6 @@ from flask import Flask
 app = Flask(__name__)
 
 
-object_map = InstanceDict()
 
 
 @app.route("/<object_id>", methods=["POST"])
@@ -204,7 +205,6 @@ def instance_call(object_id, key, args=None):
     keys = key.split(":")
     keywords = {k: decrypt(v) for k, v in zip(keys, args) if k}
     key = keys[0]
-
     fun = getattr(instance, key)
     first = keywords.pop(key, None)
     if first is None:
@@ -228,7 +228,50 @@ def instance_delete(object_id):
         print("Object", object_id, "does not exist anymore, instance from a previous session?")
 
 
+def flaskThread():
+    app.run()
+
+
+class MethodWrap(object):
+    def __init__(self, method):
+        self.method = method
+
+    def flushCache(self):
+        return self
+
+    def methodClass(self, aMethodClass):
+        return self
+
+    def origin(self):
+        return getattr(self, "class").resolve()
+
+    def package(self):
+        return self
+
+    def pragmas(self):
+        return []
+
+    def selector(self, aSymbol):
+        return self
+
+    def run(self, oldSelector, with_, in_):
+        print("IN FAKE METHOD WRAPPER")
+        print(oldSelector, with_, in_)
+        self.method.__call__(in_, *with_)
+
+
+def myfoo(self):
+    print(self.val)
+    self.val = 66
+
+# mymethod = MethodWrap(myfoo)
+
+import obj
+from obj import PharoBridge as pharo
+from obj import PharoLiteral as literal
+
 if __name__ == '__main__':
     # from werkzeug.serving import run_simple
-    app.run(threaded=True)
+    import _thread as thread
+    thread.start_new_thread(flaskThread,())
     # app.run(debug=False, threaded=True)

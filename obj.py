@@ -1,5 +1,6 @@
 import requests
 import types
+from tools import object_map
 
 
 class PharoBridge(object):
@@ -18,7 +19,7 @@ class BridgeObject(object):
         return BridgeDelayObject(self, key)
 
     def __setattr__(self, key, value):
-        if key in ('id_', 'isCalled', 'session'):
+        if key in ('id_', 'isCalled', 'session', 'value'):
             return object.__setattr__(self, key, value)
         change = {
             'action': 'instance_call',
@@ -80,6 +81,14 @@ class BridgeObject(object):
         }
         return decrypt_answer(self.call(change))
 
+    def __setitem__(self, key, value):
+        change = {
+            'action': 'instance_call',
+            'key': 'at:put:',
+            'args': [encrypt_object(key), encrypt_object(value)]
+        }
+        return decrypt_answer(self.call(change))
+
 
 class BridgeClass(BridgeObject):
     def load(self, name):
@@ -134,7 +143,7 @@ class BridgeBlock(BridgeObject):
         req = {
             'action': 'instance_call',
             'key': 'valueWithArguments:',
-            'args': [encrypt_object(o) for o in args]
+            'args': [[encrypt_object(o) for o in args]]
         }
         return decrypt_answer(self.call(req))
 
@@ -156,6 +165,20 @@ class BridgeDelayObject(object):
     @property
     def session(self):
         return self.instance.session
+
+    def __setattr__(self, key, value):
+        if key in ('instance', 'key'):
+            return object.__setattr__(self, key, value)
+        left = self.resolve()
+        return self(value)
+
+    def __setitem__(self, key, value):
+        change = {
+            'action': 'instance_call',
+            'key': 'at:put:',
+            'args': [encrypt_object(key), encrypt_object(value)]
+        }
+        return decrypt_answer(self.instance.call(change))
 
     def perform_call(self, *args, **kwargs):
         change = {
@@ -276,6 +299,8 @@ decrypt_map = {
     "block": decrypt_block,
 }
 
+import server
+from server import NIL_OBJECT, is_primitive
 
 def encrypt_object(o):
     o = o.resolve() if isinstance(o, (BridgeObject, BridgeDelayObject)) else o
@@ -296,7 +321,6 @@ def encrypt_object(o):
 
 
 
-from server import object_map, NIL_OBJECT, is_primitive
 
 # Point = PharoBridge.load('Point')
 # Smalltalk = PharoBridge.load('Smalltalk')

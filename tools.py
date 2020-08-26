@@ -37,6 +37,9 @@ class InstanceDict(MutableMapping):
         return self.reverse_objects_map[id(key)]
 
 
+
+object_map = InstanceDict()
+
 # o = list()
 #
 # i = InstanceDict()
