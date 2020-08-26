@@ -243,7 +243,7 @@ class MethodWrap(object):
         return self
 
     def origin(self):
-        return getattr(self, "class").resolve()
+        return getattr(self, "class")
 
     def package(self):
         return self

@@ -36,6 +36,11 @@ class InstanceDict(MutableMapping):
     def __missing__(self, key):
         return self.reverse_objects_map[id(key)]
 
+    def find_other_keys(self, key):
+        val = self[key]
+        return [v for k, v in self.items() if v == val]
+
+
 
 
 object_map = InstanceDict()

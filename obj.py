@@ -19,14 +19,19 @@ class BridgeObject(object):
         return BridgeDelayObject(self, key)
 
     def __setattr__(self, key, value):
-        if key in ('id_', 'isCalled', 'session', 'value'):
+        if key in ('id_', 'isCalled', 'session', 'value', 'class_name'):
             return object.__setattr__(self, key, value)
         change = {
             'action': 'instance_call',
             'key': f'{key}:',
             'args':  [encrypt_object(value)]
         }
-        return decrypt_answer(self.call(change))
+        try:
+            return decrypt_answer(self.call(change))
+        except BridgeException as e:
+            if e.class_name == 'MessageNotUnderstood':
+                slot = getattr(self, "class").slotNamed(key)
+                return slot.write(value, to=self)
 
     def __call__(self, *args, **kwargs):
         change = {
@@ -158,16 +163,16 @@ class BridgeDelayObject(object):
         self.instance = instance
         self.key = key
 
-    @property
-    def id_(self):
-        return self.instance.id_
+    # @property
+    # def id_(self):
+    #     return self.instance.id_
 
     @property
     def session(self):
         return self.instance.session
 
     def __setattr__(self, key, value):
-        if key in ('instance', 'key'):
+        if key in ('instance', 'key', 'id_'):
             return object.__setattr__(self, key, value)
         left = self.resolve()
         return self(value)
@@ -204,10 +209,12 @@ class BridgeDelayObject(object):
             'action': 'instance_call',
             'key': self.key
         }
-        return decrypt_answer(self.instance.call(change), delay_key)
+        result = decrypt_answer(self.instance.call(change), delay_key)
+        self.id_ = id(result)
+        return result
 
     def __getattr__(self, key):
-        return self.resolve(delay_key=key)
+        return self.__class__(self.resolve(), key)
 
     def __add__(self, other):
         left = self.resolve()
@@ -216,6 +223,18 @@ class BridgeDelayObject(object):
     def __str__(self):
         left = self.resolve()
         return left.__str__()
+
+    # def __del__(self):
+    #     print("Object gc", self.id_)
+    #     try:
+    #         del object_map[self.id_]
+    #     except Exception:
+    #         pass
+    #     delreq = {
+    #         'action': 'instance_delete',
+    #         'object_id': self.id_,
+    #     }
+    #     self.call(delreq)
 
 
 def decrypt_answer(d, delay_key=None):
