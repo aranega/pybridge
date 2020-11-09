@@ -275,6 +275,17 @@ class BridgeDelayObject(object):
         left = self.resolve()
         return self(value)
 
+    # def __setattr__(self, key, value):
+    #     if key in ('instance', 'key', 'id_'):
+    #         return object.__setattr__(self, key, value)
+    #     change = {
+    #         'action': 'instance_call',
+    #         'key': f'{key}:',
+    #         'args':  [encrypt_object(value)]
+    #     }
+    #     left = self.resolve()
+    #     return decrypt_answer(self.instance.call(change))
+
     def __setitem__(self, key, value):
         # if isinstance(key, int):
         #     key = key + 1
