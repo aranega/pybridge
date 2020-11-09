@@ -223,9 +223,9 @@ PyReverseBridge >> registerRoutes [
 		POST:
 			'/<obid>'
 				-> [ :req | 
-					[ self dispatchActions: req ]
-						on: Halt
-						do: [ :e | e signal ];
+					[self dispatchActions: req]
+						"on: Halt
+						do: [ :e | e signal ];"
 						on: Exception
 						do: [ :e | 
 							{(#kind -> #exception).
