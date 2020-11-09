@@ -114,13 +114,17 @@ PyReverseBridge >> encryptObject: anObject [
 
 { #category : #accessing }
 PyReverseBridge >> encryptValue: anObject [
-	anObject isNil ifTrue: [ ^ self encryptNil ].
+	anObject ifNil: [ ^ self encryptNil ].
 	(anObject isLiteral and: [ anObject isSymbol not ])
 		ifTrue: [ ^ anObject ].
 	anObject isBlock
 		ifTrue: [ ^ self encryptBlock: anObject ].
 	anObject isClass
 		ifTrue: [ ^ self encryptClass: anObject ].
+	(anObject isKindOf: PyBridgeClass)
+		ifTrue: [ ^ self encryptClass: anObject ].
+	(anObject isKindOf: PyBridgeObjectLiteral )
+		ifTrue: [ ^ anObject value ].
 	^ self encryptObject: anObject
 ]
 
