@@ -130,7 +130,7 @@ PyReverseBridge >> encryptValue: anObject [
 
 { #category : #accessing }
 PyReverseBridge >> flushInstances [
-	instanceMap removeAll
+	self instanceMap removeAll
 ]
 
 { #category : #accessing }
@@ -230,7 +230,8 @@ PyReverseBridge >> registerRoutes [
 						do: [ :e | 
 							{(#kind -> #exception).
 							(#class -> e class name).
-							(#args -> e messageText)} asDictionary ] ]
+							(#args -> e messageText)} asDictionary ] ].
+	^ server
 ]
 
 { #category : #accessing }
@@ -240,11 +241,12 @@ PyReverseBridge >> server [
 
 { #category : #accessing }
 PyReverseBridge >> start [
-	server := Teapot
-		configure:
-			{(#defaultOutput -> #json).
-			(#debugMode -> true).
-			(#port -> 4321)}.
+	server := server
+		ifNil: [ Teapot
+				configure:
+					{(#defaultOutput -> #json).
+					(#debugMode -> true).
+					(#port -> 4321)} ].
 	server start.
 	self registerRoutes
 ]

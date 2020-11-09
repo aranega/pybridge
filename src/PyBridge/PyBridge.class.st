@@ -28,14 +28,23 @@ PyBridge class >> flushInstances [
 ]
 
 { #category : #'reflective operations' }
+PyBridge class >> isRunning [
+	| reverseServer |
+	reverseServer := PyBridgeObject reverseServer.
+	^ reverseServer isNotNil and: [ reverseServer isRunning ]
+]
+
+{ #category : #'reflective operations' }
 PyBridge class >> load: aClassSymbol [
 	"Ask for a class in the remote environment"
+	self isRunning ifFalse: [ self restart ].
 	^ PyBridgeClass new loadClass: aClassSymbol.
 ]
 
 { #category : #'reflective operations' }
 PyBridge class >> loadClass: aClassSymbol [
 	"Ask for a class in the remote environment"
+	self isRunning ifFalse: [ self restart ].
 	^ PyBridgeClass new loadClass: aClassSymbol.
 ]
 
@@ -48,11 +57,11 @@ PyBridge class >> restart [
 { #category : #'reflective operations' }
 PyBridge class >> start [
 	| server |
-	PyBridgeObject reverseServer
+	server := PyBridgeObject reverseServer.
+	server
 		ifNil: [ server := PyReverseBridge new.
-			PyBridgeObject reverseServer: server.
-			^ server start ].
-	^ PyBridgeObject reverseServer
+			PyBridgeObject reverseServer: server ].
+	^ server start
 ]
 
 { #category : #'reflective operations' }
