@@ -371,16 +371,20 @@ def decrypt_answer(d, delay_key=None):
 
 def decrypt_literal(d, delay_key):
     value = d["value"]
-    o = BridgeLiteral(value=value)
-    if delay_key:
-        o = BridgeDelayObject(o, delay_key)
-    object_map[o.id_] = o
-    req ={
-        'action': 'register_literal',
-        'value': value
-    }
-    o.call(req)
-    return o
+    id_value = id(value)
+    try:
+        return object_map[id(value)]
+    except KeyError:
+        o = BridgeLiteral(value=value)
+        if delay_key:
+            o = BridgeDelayObject(o, delay_key)
+        object_map[o.id_] = o
+        req ={
+            'action': 'register_literal',
+            'value': value
+        }
+        o.call(req)
+        return o
 
 def decrypt_object(d, delay_key):
     object_id = d["value"]["object_id"]
