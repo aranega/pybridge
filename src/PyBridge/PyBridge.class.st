@@ -40,15 +40,29 @@ PyBridge class >> loadClass: aClassSymbol [
 ]
 
 { #category : #'reflective operations' }
-PyBridge class >> startReverse [
-	| server |
-	PyBridgeObject reverseServer ifNotNil: [ self stopReverse ].
-	server := PyReverseBridge new.
-	PyBridgeObject reverseServer: server.
-	^ server start
+PyBridge class >> restart [
+	self stop.
+	self start
 ]
 
 { #category : #'reflective operations' }
-PyBridge class >> stopReverse [
-	PyBridgeObject removeServer
+PyBridge class >> start [
+	| server |
+	PyBridgeObject reverseServer
+		ifNil: [ server := PyReverseBridge new.
+			PyBridgeObject reverseServer: server.
+			^ server start ].
+	^ PyBridgeObject reverseServer
+]
+
+{ #category : #'reflective operations' }
+PyBridge class >> stop [
+	"PyBridgeObject removeServer"
+
+	| reverseServer |
+	reverseServer := PyBridgeObject reverseServer.
+	reverseServer
+		ifNotNil: [ reverseServer stop.
+			reverseServer flushInstances ].
+	self flushInstances
 ]

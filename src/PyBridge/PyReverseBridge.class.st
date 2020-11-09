@@ -129,6 +129,11 @@ PyReverseBridge >> encryptValue: anObject [
 ]
 
 { #category : #accessing }
+PyReverseBridge >> flushInstances [
+	instanceMap removeAll
+]
+
+{ #category : #accessing }
 PyReverseBridge >> instanceCall: key on: objectId [
 	| instance res |
 	instance := self instanceMap
