@@ -102,6 +102,21 @@ class BridgeObject(object):
         }
         return decrypt_answer(self.call(change))
 
+    def __wrapped__(self, *args, **kwargs):
+        ...
+
+    # def __dir__(self):
+    #     elems = object.__dir__(self)
+    #     cls = getattr(self, "class").resolve()
+    #     keys = cls.methodDict.keys()
+    #     instvars = cls.instVarNames()
+    #     elems.extend(keys)
+    #     # elems.extend(instvars)
+    #     return elems
+
+    def __len__(self):
+        return self.size().value
+
 
 class BridgeClass(BridgeObject):
     def load(self, name):
