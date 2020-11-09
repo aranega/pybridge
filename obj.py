@@ -138,8 +138,83 @@ class BridgeClass(BridgeObject):
 
 class BridgeLiteral(BridgeObject):
     def __init__(self, value, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, id_=id(value), **kwargs)
         self.value = value
+
+    def __le__(self, other):
+        try:
+            return self.value <= other.value
+        except Exception:
+            return self.value <= other
+        try:
+            change = {
+                'action': 'instance_call',
+                'key': '<=',
+                'args': encrypt_object(other)
+            }
+            return decrypt_answer(self.call(change))
+        except Exception:
+            try:
+                return self.value <= other
+            except Exception:
+                return self.value <= other.value
+
+    def __ge__(self, other):
+        try:
+            return self.value >= other.value
+        except Exception:
+            return self.value >= other
+        try:
+            change = {
+                'action': 'instance_call',
+                'key': '>=',
+                'args': encrypt_object(other)
+            }
+            return decrypt_answer(self.call(change))
+        except Exception:
+            try:
+                return self.value >= other
+            except Exception:
+                return self.value >= other.value
+
+    def __lt__(self, other):
+        try:
+            return self.value < other.value
+        except Exception:
+            return self.value < other
+        try:
+            change = {
+                'action': 'instance_call',
+                'key': '<',
+                'args': encrypt_object(other)
+            }
+            return decrypt_answer(self.call(change))
+        except Exception:
+            try:
+                return self.value < other
+            except Exception:
+                return self.value < other.value
+
+    def __gt__(self, other):
+        try:
+            return self.value >= other.value
+        except Exception:
+            return self.value >= other
+        try:
+            change = {
+                'action': 'instance_call',
+                'key': '>=',
+                'args': encrypt_object(other)
+            }
+            return decrypt_answer(self.call(change))
+        except Exception:
+            try:
+                return self.value >= other
+            except Exception:
+                return self.value >= other.value
+
+    def __str__(self):
+        return self.printString()
 
 
 class PharoLiteral(BridgeLiteral):
@@ -248,6 +323,22 @@ class BridgeDelayObject(object):
     def __str__(self):
         left = self.resolve()
         return left.__str__()
+
+    def __le__(self, other):
+        left = self.resolve()
+        return left.__le__(other)
+
+    def __ge__(self, other):
+        left = self.resolve()
+        return left.__ge__(other)
+
+    def __lt__(self, other):
+        left = self.resolve()
+        return left.__lt__(other)
+
+    def __gt__(self, other):
+        left = self.resolve()
+        return left.__gt__(other)
 
     # def __del__(self):
     #     print("Object gc", self.id_)
