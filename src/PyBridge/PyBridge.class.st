@@ -38,3 +38,17 @@ PyBridge class >> loadClass: aClassSymbol [
 	"Ask for a class in the remote environment"
 	^ PyBridgeClass new loadClass: aClassSymbol.
 ]
+
+{ #category : #'reflective operations' }
+PyBridge class >> startReverse [
+	| server |
+	PyBridgeObject reverseServer ifNotNil: [ self stopReverse ].
+	server := PyReverseBridge new.
+	PyBridgeObject reverseServer: server.
+	^ server start
+]
+
+{ #category : #'reflective operations' }
+PyBridge class >> stopReverse [
+	PyBridgeObject removeServer
+]

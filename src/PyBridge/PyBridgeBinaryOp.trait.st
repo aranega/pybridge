@@ -12,3 +12,13 @@ PyBridgeBinaryOp >> * another [
 PyBridgeBinaryOp >> + another [
 	^ self __add__: another
 ]
+
+{ #category : #arithmetic }
+PyBridgeBinaryOp >> - another [
+	^ self __sub__: another
+]
+
+{ #category : #arithmetic }
+PyBridgeBinaryOp >> / another [
+	^ self __truediv__: another
+]

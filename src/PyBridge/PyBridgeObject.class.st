@@ -7,7 +7,8 @@ Class {
 		'objectId'
 	],
 	#classVars : [
-		'instanceMap'
+		'instanceMap',
+		'reverseServer'
 	],
 	#classInstVars : [
 		'string2class'
@@ -18,6 +19,23 @@ Class {
 { #category : #'reflective operations' }
 PyBridgeObject class >> instanceMap [
 	^ instanceMap := instanceMap ifNil: [ WeakValueDictionary new ]
+]
+
+{ #category : #'reflective operations' }
+PyBridgeObject class >> removeServer [
+	reverseServer ifNil: [ ^ self ]. 
+	reverseServer stop.
+	reverseServer := nil
+]
+
+{ #category : #'reflective operations' }
+PyBridgeObject class >> reverseServer [
+	^ reverseServer
+]
+
+{ #category : #'reflective operations' }
+PyBridgeObject class >> reverseServer: aServer [
+	reverseServer := aServer
 ]
 
 { #category : #testing }
@@ -135,10 +153,20 @@ PyBridgeObject >> doesNotUnderstand: aMessage [
 
 { #category : #'reflective operations' }
 PyBridgeObject >> encryptValue: aValue [
-	aValue isLiteral ifTrue: [ ^ aValue ].
-	aValue isDictionary ifTrue: [ ^ aValue  ].
-	
-	^ { #object_id -> (self bridgeUUIDOf: aValue) } asDictionary
+	| id kind |
+	aValue isLiteral
+		ifTrue: [ ^ aValue ].
+	aValue isDictionary
+		ifTrue: [ ^ aValue ].
+	id := self bridgeUUIDOf: aValue.
+	self reverseServerIsRunning ifTrue: [ self reverseServer instanceMap at: id ifAbsentPut: [ aValue ] ].
+	aValue isBlock
+		ifTrue: [ kind := #block ]
+		ifFalse: [ aValue isClass
+				ifTrue: [ kind := #type ]
+				ifFalse: [ kind := #object ] ].
+	^ {(#object_id -> (self bridgeUUIDOf: aValue)).
+	(#kind -> kind)} asDictionary
 ]
 
 { #category : #'reflective operations' }
@@ -206,4 +234,14 @@ PyBridgeObject >> printString [
 	str := super printString.
 	res := self __str__.
 	^ str, '(', res literalValue, ')'
+]
+
+{ #category : #'reflective operations' }
+PyBridgeObject >> reverseServer [
+	^ self class reverseServer 
+]
+
+{ #category : #'reflective operations' }
+PyBridgeObject >> reverseServerIsRunning [
+	^ self reverseServer isNotNil and: [ self reverseServer isRunning ]
 ]
