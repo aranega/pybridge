@@ -198,21 +198,25 @@ def decrypt(o):
 
 
 def instance_call(object_id, key, args=None):
+    import inspect
     args = args or []
     instance = object_map[object_id]
     dict = {"object_id": object_id}
     key = translation_map.get(key, key)
     keys = key.split(":")
+    funname = keys[0]
+    fun = getattr(instance, funname)
+
+    first_key = next(iter(inspect.signature(fun).parameters), None)
+    if first_key:
+        keys[0] = first_key
     keywords = {k: decrypt(v) for k, v in zip(keys, args) if k}
-    key = keys[0]
-    fun = getattr(instance, key)
-    first = keywords.pop(key, None)
-    if first is None:
+    if len(keywords) == 0:
         return fun()
     try:
-        return fun(first, **keywords)
+        return fun(**keywords)
     except TypeError:
-        return fun(first, *keywords.values())
+        return fun(*keywords.values())
 
 
 # a = create_instance(1, 'A')
@@ -270,8 +274,15 @@ import obj
 from obj import PharoBridge as pharo
 from obj import PharoLiteral as literal
 
+
+class MyTranscript(object):
+    @staticmethod
+    def show(s):
+        print('\n'*4, "InPython!!", s, '\n'*4)
+
+
 if __name__ == '__main__':
     # from werkzeug.serving import run_simple
-    import _thread as thread
-    thread.start_new_thread(flaskThread,())
-    # app.run(debug=False, threaded=True)
+    # import _thread as thread
+    # thread.start_new_thread(flaskThread,())
+    app.run(debug=False, threaded=True)
