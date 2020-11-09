@@ -79,6 +79,12 @@ class BridgeObject(object):
         return decrypt_answer(self.call(change))
 
     def __getitem__(self, key):
+        if isinstance(key, int):
+            if key == 0:
+                key = key + 1
+            elif key > len(self):
+                print("Ober?")
+                return
         change = {
             'action': 'instance_call',
             'key': 'at:',
@@ -87,6 +93,8 @@ class BridgeObject(object):
         return decrypt_answer(self.call(change))
 
     def __setitem__(self, key, value):
+        # if isinstance(key, int):
+        #     key = key + 1
         change = {
             'action': 'instance_call',
             'key': 'at:put:',
@@ -178,6 +186,8 @@ class BridgeDelayObject(object):
         return self(value)
 
     def __setitem__(self, key, value):
+        # if isinstance(key, int):
+        #     key = key + 1
         change = {
             'action': 'instance_call',
             'key': 'at:put:',
