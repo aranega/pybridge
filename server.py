@@ -23,7 +23,7 @@ class A(object):
         return self.myval
 
     def hello(self, message='hello', number=None):
-        print('From hello', message, number.myval)
+        print('From hello', message, number)
         return number
 
     def myself(self):
@@ -41,24 +41,24 @@ app = Flask(__name__)
 def hello(object_id):
     change = request.json
     from pprint import pprint
-    pprint(change)
+    # pprint(change)
     frame = inspect.currentframe()
     fun = frame.f_globals[change["action"]]
     del change["action"]
     try:
         instance = fun(**change)
-        print("Result", instance)
+        # print("Result", instance)
         if fun in (get__dict__, ):
             return instance
         res = build_response(instance)
-        pprint(res)
+        # pprint(res)
         return res
     except Exception as e:
         return build_exception(e)
 
 
 def build_exception(e):
-    print("Exception", e)
+    # print("Exception", e)
     return {
         "kind": "exception",
         "class": e.__class__.__name__,
@@ -85,10 +85,10 @@ def build_response(o):
     if is_primitive(o):
         return {"kind": "literal", "value": o}
     if o not in object_map:
-        print('registering', o, id(o))
+        # print('registering', o, id(o))
         object_map[id(o)] = o
     if isinstance(o, type):
-        print('Its a type', object_map[o])
+        # print('Its a type', object_map[o])
         return {"kind": "type", "value": {"object_id": object_map[o]}}
     return {"kind": "object", "value": {"object_id": object_map[o]}}
 
@@ -107,7 +107,7 @@ def register_object(object_id, python_id):
     o = object_map[python_id]
     object_map[object_id] = o
     object_map.reverse_objects_map[python_id] = object_id
-    print('register', object_id, 'for', o, 'on', python_id)
+    # print('register', object_id, 'for', o, 'on', python_id)
     return python_id
 
 
@@ -131,7 +131,7 @@ def get_class(object_id, class_name):
     class_name = class_name.replace("::", ".")
     clazz = str_to_class(class_name)
     object_map[object_id] = clazz
-    print('get_class', object_id, id(clazz))
+    # print('get_class', object_id, id(clazz))
     return clazz
 
 
@@ -151,7 +151,7 @@ def create_instance(object_id, class_name=None, clazz=None, args=None, nonexisti
     else:
         object_map[object_id] = instance
 
-    print("Create", class_name, object_id)
+    # print("Create", class_name, object_id)
     return instance
 
 
@@ -164,7 +164,7 @@ def instance_setattr(object_id, key, value):
     if callable(fun):
         return fun(decrypt(value))
     setattr(instance, key, value)
-    print("Set", key, value)
+    # print("Set", key, value)
 
 
 translation_map = {
@@ -190,7 +190,7 @@ def decrypt(o):
         if isinstance(o, dict) and "object_id" in o:
             return object_map[o["object_id"]]
     except Exception:
-        print('Problem here, I dont know the object, I put a PharoObject instead')
+        # print('Problem here, I dont know the object, I put a PharoObject instead')
         from obj import decrypt_answer
         o = decrypt_answer({'kind': o['kind'], 'value': o})
         return o
@@ -227,7 +227,7 @@ def instance_delete(object_id):
     try:
         instance = object_map[object_id]
         del object_map[object_id]
-        print("Deleting", object_id, instance)
+        # print("Deleting", object_id, instance)
     except Exception:
         print("Object", object_id, "does not exist anymore, instance from a previous session?")
 
