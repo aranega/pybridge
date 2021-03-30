@@ -201,7 +201,7 @@ def instance_call(object_id, key, args=None):
     import inspect
     args = args or []
     instance = object_map[object_id]
-    dict = {"object_id": object_id}
+    # dict = {"object_id": object_id}
     key = translation_map.get(key, key)
     keys = key.split(":")
     funname = keys[0]
@@ -216,7 +216,13 @@ def instance_call(object_id, key, args=None):
     try:
         return fun(**keywords)
     except TypeError:
-        return fun(*keywords.values())
+        try:
+            k, v = next(iter(keywords.items()))
+            others = dict(keywords)
+            others.pop(k)
+            return fun(v, **others)
+        except TypeError:
+            return fun(*keywords.values())
 
 
 # a = create_instance(1, 'A')

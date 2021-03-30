@@ -10,16 +10,18 @@ class PharoBridge(object):
 
 
 class BridgeObject(object):
-    def __init__(self, id_=None):
+    def __init__(self, id_=None, *args, **kwargs):
         self.id_ = id_ or id(self)
         self.isCalled = False
         self.session = requests.post
 
     def __getattr__(self, key):
+        # if key in ('id_', 'isCalled', 'session', 'value', 'class_name'):
+        #     return object.__getattribute__(self, key)
         return BridgeDelayObject(self, key)
 
     def __setattr__(self, key, value):
-        if key in ('id_', 'isCalled', 'session', 'value', 'class_name'):
+        if key in ('id_', 'isCalled', 'session', 'value', 'class_name', 'python_class'):
             return object.__setattr__(self, key, value)
         change = {
             'action': 'instance_call',
@@ -56,16 +58,19 @@ class BridgeObject(object):
         return decrypt_answer(self.call(change)).value
 
     def __del__(self):
-        print("Object gc", self.id_)
+        # import ipdb; ipdb.set_trace()
+
         try:
+            print("Object gc", self.id_)
             del object_map[self.id_]
+            delreq = {
+                'action': 'instance_delete',
+                'object_id': self.id_,
+            }
+            self.call(delreq)
         except Exception:
             pass
-        delreq = {
-            'action': 'instance_delete',
-            'object_id': self.id_,
-        }
-        self.call(delreq)
+
 
     def resolve(self):
         return self
@@ -118,13 +123,43 @@ class BridgeObject(object):
         return self.size().value
 
 
+class SClass(type):
+    def __new__(mc, name, base, dict, pharocls):
+        # instvars = pharocls.allInstVarNames()
+        # def new_init(self):
+        #     print("Here")
+        #     # for var in instvars.value:
+        #     #     setattr(self, var, None)
+        #     self.initialize()
+        # dict['__init__'] = new_init
+        newclass = type(name, base, dict)
+        pharocls.python_class = newclass
+        newclass.pharo_class = pharocls
+        return newclass
+
+
 class BridgeClass(BridgeObject):
+
+    # def __new__(cls, *args, **kwargs):
+    #     if not args:
+    #         return type.__new__(cls, *args, **kwargs)
+    #     import types
+    #     import ipdb; ipdb.set_trace()
+    #
+    #     return types.new_class(args[0], (object, ), args[2])
+
+    def __init__(self, id_=None, *args, **kwargs):
+        super().__init__(id_)
+        self.python_class = None
+        # return type
+
     def load(self, name):
         loadreq = {
             'action': 'get_class',
             'class_name': name,
         }
         clazz = self.call(loadreq)
+        newclass = SClass(name, (BridgeClass, ), {}, self)
         object_map[clazz["value"]["object_id"]] = self
         return self
 
@@ -133,7 +168,24 @@ class BridgeClass(BridgeObject):
             'action': 'instance_call',
             'key': 'new',
         }
+        print("Call")
         return decrypt_answer(self.call(req))
+
+    def __mro_entries__(self, x):
+        sc = self.superclass.resolve()
+        if sc is None:
+            # return (types.new_class(str(self.name)), )
+            raise Exception("NON")
+        # req ={
+        #     'python_id': id(self.python_class),
+        #     'action': 'register_object',
+        # }
+        # self.call(req)
+        # print("Register", id(self.python_class))
+        # object_map[id(self.python_class)] = self.python_class
+        return (self.python_class, )
+
+
 
 
 class BridgeLiteral(BridgeObject):
@@ -214,7 +266,7 @@ class BridgeLiteral(BridgeObject):
                 return self.value >= other.value
 
     def __str__(self):
-        return self.printString()
+        return self.printString().value
 
 
 class PharoLiteral(BridgeLiteral):
