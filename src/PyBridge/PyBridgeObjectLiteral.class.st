@@ -20,6 +20,16 @@ PyBridgeObjectLiteral class >> with: aLiteral [
 ]
 
 { #category : #accessing }
+PyBridgeObjectLiteral >> asNativeObject [
+	^ literalValue 
+]
+
+{ #category : #accessing }
+PyBridgeObjectLiteral >> convertToNativeObject [
+	^ literalValue
+]
+
+{ #category : #accessing }
 PyBridgeObjectLiteral >> literalValue [
 	^ literalValue
 ]
