@@ -48,7 +48,7 @@ def hello(object_id):
     try:
         instance = fun(**change)
         # print("Result", instance)
-        if fun in (get__dict__, ):
+        if fun in (get__dict__, get__native_object__):
             return instance
         res = build_response(instance)
         # pprint(res)
@@ -93,9 +93,20 @@ def build_response(o):
     return {"kind": "object", "value": {"object_id": object_map[o]}}
 
 
+def to_native_object(o):
+    if isinstance(o, (list, tuple, set)):
+        return tuple(to_native_object(x) for x in o)
+    if isinstance(o, dict):
+        return {k : to_native_object(v) for k, v in o.items()}
+    return build_response(o)
+
+def get__native_object__(object_id):
+    o = object_map[object_id]
+    return {"native": to_native_object(o)}
+
 def get__dict__(object_id):
     o = object_map[object_id]
-    return {k : build_response(v) for k, v in o.items()}
+    return to_native_object(o)
 
 
 def register_literal(object_id, value):
