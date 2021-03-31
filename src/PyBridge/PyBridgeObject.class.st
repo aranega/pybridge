@@ -187,8 +187,10 @@ PyBridgeObject >> encryptValue: aValue [
 { #category : #'reflective operations' }
 PyBridgeObject >> finalize [
 	"Ask for a clean of the object in the remote environement"
-	self post: (Dictionary new) action: #instance_delete
-	
+
+	[ self post: Dictionary new action: #instance_delete ]
+		on: ConnectionTimedOut
+		do: [ :ex | self ]
 ]
 
 { #category : #'gt-inspector-extension' }
