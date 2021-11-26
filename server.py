@@ -30,6 +30,12 @@ class A(object):
         return self
 
 
+class B(object):
+    def __init__(self, v1=0, v2=4):
+        self.v1 = v1
+        self.v2 = v2
+
+
 from flask import Flask
 
 app = Flask(__name__)
@@ -190,7 +196,13 @@ def instance_getattr(object_id, key):
     dict = {"object_id": object_id}
     key = translation_map.get(key, key)
     value = getattr(instance, key)
+    # print(key, value)
+    # print("   ", inspect.ismethod(value), inspect.isfunction(value))
+    from pyecore.ecore import EObject
+    if isinstance(value, EObject):
+        return value
     if callable(value) and not isinstance(value, type) and not inspect.ismodule(instance):
+    # if callable(value) and (inspect.ismethod(value) or inspect.isfunction(value)):
         # print("I will consider this a callable")
         value = value()
     return value
@@ -217,6 +229,8 @@ def instance_call(object_id, key, args=None):
     keys = key.split(":")
     funname = keys[0]
     fun = getattr(instance, funname)
+    if isinstance(args, dict):
+        return fun(**args)
 
     first_key = next(iter(inspect.signature(fun).parameters), None)
     if first_key:
