@@ -107,6 +107,14 @@ PyBridgeObject >> asNativeDict [
 ]
 
 { #category : #'reflective operations' }
+PyBridgeObject >> asNativeList [
+	| result |
+	result := OrderedCollection new.
+	self do: [ :each | result add: each ].
+	^ result
+]
+
+{ #category : #'reflective operations' }
 PyBridgeObject >> asNativeObject [
 	"get__native_object__"
 
@@ -114,6 +122,14 @@ PyBridgeObject >> asNativeObject [
 	response := self post: Dictionary new action: #get__native_object__.
 	struct := STONJSON fromString: response contents.
 	^ (struct at: 'native') convertToNativeObject
+]
+
+{ #category : #'reflective operations' }
+PyBridgeObject >> asOrderedCollection [
+	| result |
+	result := OrderedCollection new.
+	self do: [ :each | result add: each ].
+	^ result
 ]
 
 { #category : #'reflective operations' }
@@ -231,6 +247,17 @@ PyBridgeObject >> performCall: methodName args: arguments [
 	dict := {(#args -> args).
 	(#key -> methodName)} asDictionary.
 	^ self class decryptAnswer: (self post: dict action: #instance_call)
+]
+
+{ #category : #'reflective operations' }
+PyBridgeObject >> performCall: methodName argsDict: arguments [
+	| args dict |
+	args := (arguments
+		collect: [ :entry | entry key -> (self encryptValue: entry value) ])
+		asDictionary.
+	dict := {(#args -> args).
+	(#key -> methodName)} asDictionary.
+	^ self decryptAnswer: (self post: dict action: #instance_call)
 ]
 
 { #category : #'reflective operations' }
