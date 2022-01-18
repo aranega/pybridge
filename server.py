@@ -7,6 +7,7 @@ from builtins import list
 import sys
 import importlib
 import json
+from types import MappingProxyType
 
 from tools import object_map
 
@@ -54,7 +55,7 @@ def hello(object_id):
     try:
         instance = fun(**change)
         # print("Result", instance)
-        if fun in (get__dict__, get__native_object__):
+        if fun in (get__dict__, get__native_object__, internal_repr):
             return instance
         res = build_response(instance)
         # pprint(res)
@@ -102,7 +103,7 @@ def build_response(o):
 def to_native_object(o):
     if isinstance(o, (list, tuple, set)):
         return tuple(to_native_object(x) for x in o)
-    if isinstance(o, dict):
+    if isinstance(o, (dict, MappingProxyType)):
         return {k : to_native_object(v) for k, v in o.items()}
     return build_response(o)
 
@@ -114,6 +115,11 @@ def get__dict__(object_id):
     o = object_map[object_id]
     return to_native_object(o)
 
+def internal_repr(object_id):
+    o = object_map[object_id]
+    if hasattr(o, '__dict__'):
+        return to_native_object(o.__dict__)
+    return to_native_object(o.__dict__)
 
 def register_literal(object_id, value):
     object_map[object_id] = value
@@ -198,9 +204,12 @@ def instance_getattr(object_id, key):
     value = getattr(instance, key)
     # print(key, value)
     # print("   ", inspect.ismethod(value), inspect.isfunction(value))
-    from pyecore.ecore import EObject
-    if isinstance(value, EObject):
-        return value
+    try:
+        from pyecore.ecore import EObject
+        if isinstance(value, EObject):
+            return value
+    except Exception:
+        ...
     if callable(value) and not isinstance(value, type) and not inspect.ismodule(instance):
     # if callable(value) and (inspect.ismethod(value) or inspect.isfunction(value)):
         # print("I will consider this a callable")
