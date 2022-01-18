@@ -54,6 +54,7 @@ PyBridgeObject class >> decryptObject: aDict [
 
 { #category : #'reflective operations' }
 PyBridgeObject class >> decryptPythonElement: dict [
+	dict isArray ifTrue:[^dict collect:[:e| self decryptPythonElement: e]].
 	(dict at: #kind) = 'literal'
 		ifTrue: [ ^ self decryptLiteral: dict ].
 	(dict at: #kind) = 'object'
@@ -278,6 +279,35 @@ PyBridgeObject >> printString [
 	str := super printString.
 	res := self __str__.
 	^ str, '(', res literalValue, ')'
+]
+
+{ #category : #'gt-inspector-extension' }
+PyBridgeObject >> pyBridgeInspection [
+
+	<inspectorPresentationOrder: 1 title: 'Remote raw'>
+	| table elements |
+	table := SpTablePresenter new.
+	table addColumn:
+		(SpStringTableColumn title: 'Variable' evaluated: [ :e | e key ]).
+	table addColumn:
+		(SpStringTableColumn title: 'Value' evaluated: [ :e | e value ]).
+	elements := OrderedCollection new.
+	[ 
+	self __dict__ asNativeDict keysAndValuesDo: [ :k :v | 
+		elements add: ((PyBridgeObjectInspectorNode hostObject: self)
+				 key: k;
+				 value: v;
+				 yourself) ] ]
+		on: Error
+		do: [ :e | 
+			self halt.
+			elements add: (PyBridgeObjectInspectorNode new
+					 key: 'None';
+					 value: 'Object has no __dict__';
+					 yourself) ].
+
+	table items: elements.
+	^ table
 ]
 
 { #category : #'reflective operations' }
