@@ -54,17 +54,17 @@ PyBridgeObject class >> decryptObject: aDict [
 
 { #category : #'reflective operations' }
 PyBridgeObject class >> decryptPythonElement: dict [
-	dict isArray ifTrue:[^dict collect:[:e| self decryptPythonElement: e]].
-	(dict at: #kind) = 'literal'
-		ifTrue: [ ^ self decryptLiteral: dict ].
-	(dict at: #kind) = 'object'
-		ifTrue: [ ^ self decryptObject: dict ].
-	(dict at: #kind) = 'type'
-		ifTrue: [ ^ self decryptObject: dict ].
-	(dict at: #kind) = 'nil_object'
-		ifTrue: [ ^ nil ].
-	(dict at: #kind) = 'exception'
-		ifTrue: [ ^ self decryptException: dict ]
+
+	dict isArray ifTrue: [ 
+		^ dict collect: [ :e | self decryptPythonElement: e ] ].
+	dict isDictionary ifFalse: [ ^ dict ].
+	dict at: #kind ifAbsent: [ ^ dict "should be recursive" ]. 
+	(dict at: #kind) = 'literal' ifTrue: [ ^ self decryptLiteral: dict ].
+	(dict at: #kind) = 'object' ifTrue: [ ^ self decryptObject: dict ].
+	(dict at: #kind) = 'type' ifTrue: [ ^ self decryptObject: dict ].
+	(dict at: #kind) = 'nil_object' ifTrue: [ ^ nil ].
+	(dict at: #kind) = 'exception' ifTrue: [ 
+		^ self decryptException: dict ]
 ]
 
 { #category : #'reflective operations' }
