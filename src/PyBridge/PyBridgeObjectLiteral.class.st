@@ -46,6 +46,15 @@ PyBridgeObjectLiteral >> printString [
 	^ str, '(', literalValue asString, ')'
 ]
 
+{ #category : #'gt-inspector-extension' }
+PyBridgeObjectLiteral >> pyBridgeInspectionSlots [
+
+	^ OrderedCollection with: (PyBridgeObjectInspectorNode new
+			   key: self class name;
+			   value: self literalValue;
+			   yourself)
+]
+
 { #category : #accessing }
 PyBridgeObjectLiteral >> value [
 	^ literalValue 
