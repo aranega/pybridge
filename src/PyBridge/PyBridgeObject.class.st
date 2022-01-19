@@ -269,29 +269,36 @@ PyBridgeObject >> printString [
 PyBridgeObject >> pyBridgeInspection [
 
 	<inspectorPresentationOrder: 1 title: 'Remote raw'>
-	| table elements |
+	| table |
 	table := SpTablePresenter new.
+	table beResizable.
 	table addColumn:
 		(SpStringTableColumn title: 'Variable' evaluated: [ :e | e key ]).
-	table addColumn:
-		(SpStringTableColumn title: 'Value' evaluated: [ :e | e value ]).
-	elements := OrderedCollection new.
-	[ 
-	self __dict__ asNativeDict keysAndValuesDo: [ :k :v | 
-		elements add: ((PyBridgeObjectInspectorNode hostObject: self)
-				 key: k;
-				 value: v;
-				 yourself) ] ]
+	table addColumn: (SpStringTableColumn
+			 title: 'Value'
+			 evaluated: [ :e | e value printString ]).
+	table items: self pyBridgeInspectionSlots.
+	^ table
+]
+
+{ #category : #'gt-inspector-extension' }
+PyBridgeObject >> pyBridgeInspectionSlots [
+
+	| dict |
+	[ dict := self __dict__ ]
 		on: Error
 		do: [ :e | 
-			self halt.
-			elements add: (PyBridgeObjectInspectorNode new
-					 key: 'None';
-					 value: 'Object has no __dict__';
-					 yourself) ].
+			^ OrderedCollection with: (PyBridgeObjectInspectorNode new
+					   key: 'None';
+					   value: 'Object has no __dict__';
+					   yourself) ].
 
-	table items: elements.
-	^ table
+
+	^ dict asNativeDict associations collect: [ :association | 
+		  (PyBridgeObjectInspectorNode hostObject: self)
+			  key: association key;
+			  value: association value;
+			  yourself ]
 ]
 
 { #category : #'reflective operations' }
