@@ -254,11 +254,15 @@ PyBridgeObject >> post: dict action: action [
 ]
 
 { #category : #'reflective operations' }
+PyBridgeObject >> printOn: aStream [
+
+	aStream << self __str__ literalValue
+]
+
+{ #category : #'reflective operations' }
 PyBridgeObject >> printString [
-	| str res |
-	str := super printString.
-	res := self __str__.
-	^ str, '(', res literalValue, ')'
+
+	^ self __str__ literalValue
 ]
 
 { #category : #'gt-inspector-extension' }
