@@ -265,7 +265,7 @@ PyBridgeObject >> printString [
 	^ self __str__ literalValue
 ]
 
-{ #category : #'gt-inspector-extension' }
+{ #category : #'spec - inspections' }
 PyBridgeObject >> pyBridgeInspection [
 
 	<inspectorPresentationOrder: 1 title: 'Remote raw'>
@@ -281,10 +281,10 @@ PyBridgeObject >> pyBridgeInspection [
 	^ table
 ]
 
-{ #category : #'gt-inspector-extension' }
+{ #category : #'spec - inspections' }
 PyBridgeObject >> pyBridgeInspectionSlots [
 
-	| dict |
+	| dict elements |
 	[ dict := self __dict__ ]
 		on: Error
 		do: [ :e | 
@@ -292,13 +292,14 @@ PyBridgeObject >> pyBridgeInspectionSlots [
 					   key: 'None';
 					   value: 'Object has no __dict__';
 					   yourself) ].
-
-
-	^ dict asNativeDict associations collect: [ :association | 
-		  (PyBridgeObjectInspectorNode hostObject: self)
-			  key: association key;
-			  value: association value;
-			  yourself ]
+	self flag: 'This way of doing things is incorrect: it should be done only if we get a collection. How to make the difference?'.
+	elements := OrderedCollection new.
+	dict items do: [ :k :v | 
+		elements add: ((PyBridgeObjectInspectorNode hostObject: self)
+				 key: k;
+				 value: v;
+				 yourself) ].
+	^ elements
 ]
 
 { #category : #'reflective operations' }

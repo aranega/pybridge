@@ -40,13 +40,17 @@ PyBridgeObjectLiteral >> literalValue: anObject [
 ]
 
 { #category : #accessing }
-PyBridgeObjectLiteral >> printString [
-	| str |
-	str := self class name asString.
-	^ str, '(', literalValue asString, ')'
+PyBridgeObjectLiteral >> printOn: aStream [
+	aStream << literalValue asString
 ]
 
-{ #category : #'gt-inspector-extension' }
+{ #category : #accessing }
+PyBridgeObjectLiteral >> printString [
+
+	^ literalValue asString
+]
+
+{ #category : #'spec - inspections' }
 PyBridgeObjectLiteral >> pyBridgeInspectionSlots [
 
 	^ OrderedCollection with: (PyBridgeObjectInspectorNode new
