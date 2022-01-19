@@ -210,26 +210,6 @@ PyBridgeObject >> finalize [
 		do: [ :ex | self ]
 ]
 
-{ #category : #'gt-inspector-extension' }
-PyBridgeObject >> gtInspectorRemoteObject: composite [
-	<gtInspectorPresentationOrder: 50>
-	composite table
-		title: [ 'Remote raw' translated ];
-		display: [ :anObject | 
-			| instVars |
-			instVars := OrderedCollection new.
-			[ anObject __dict__ asNativeDict 
-				keysAndValuesDo: [ :key :val | instVars add: key -> val ] ]
-				on: PyBridgeException
-				do: [ instVars add: 'None' -> 'Object has no __dict__' ].
-			instVars asArray ];
-		column: 'Variable'
-			evaluated: [ :assoc | GTObjectPrinter asNonTruncatedTextFrom: assoc key ];
-		column: 'Value'
-			evaluated: [ :assoc | assoc value printString ]
-
-]
-
 { #category : #'reflective operations' }
 PyBridgeObject >> initialize [
 	objectId := self bridgeUUID.
