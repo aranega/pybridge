@@ -210,26 +210,6 @@ PyBridgeObject >> finalize [
 		do: [ :ex | self ]
 ]
 
-{ #category : #'gt-inspector-extension' }
-PyBridgeObject >> gtInspectorRemoteObject: composite [
-	<gtInspectorPresentationOrder: 50>
-	composite table
-		title: [ 'Remote raw' translated ];
-		display: [ :anObject | 
-			| instVars |
-			instVars := OrderedCollection new.
-			[ anObject __dict__ asNativeDict 
-				keysAndValuesDo: [ :key :val | instVars add: key -> val ] ]
-				on: PyBridgeException
-				do: [ instVars add: 'None' -> 'Object has no __dict__' ].
-			instVars asArray ];
-		column: 'Variable'
-			evaluated: [ :assoc | GTObjectPrinter asNonTruncatedTextFrom: assoc key ];
-		column: 'Value'
-			evaluated: [ :assoc | assoc value printString ]
-
-]
-
 { #category : #'reflective operations' }
 PyBridgeObject >> initialize [
 	objectId := self bridgeUUID.
@@ -274,40 +254,52 @@ PyBridgeObject >> post: dict action: action [
 ]
 
 { #category : #'reflective operations' }
-PyBridgeObject >> printString [
-	| str res |
-	str := super printString.
-	res := self __str__.
-	^ str, '(', res literalValue, ')'
+PyBridgeObject >> printOn: aStream [
+
+	aStream << self __str__ literalValue
 ]
 
-{ #category : #'gt-inspector-extension' }
+{ #category : #'reflective operations' }
+PyBridgeObject >> printString [
+
+	^ self __str__ literalValue
+]
+
+{ #category : #'spec - inspections' }
 PyBridgeObject >> pyBridgeInspection [
 
 	<inspectorPresentationOrder: 1 title: 'Remote raw'>
-	| table elements |
+	| table |
 	table := SpTablePresenter new.
+	table beResizable.
 	table addColumn:
 		(SpStringTableColumn title: 'Variable' evaluated: [ :e | e key ]).
-	table addColumn:
-		(SpStringTableColumn title: 'Value' evaluated: [ :e | e value ]).
+	table addColumn: (SpStringTableColumn
+			 title: 'Value'
+			 evaluated: [ :e | e value printString ]).
+	table items: self pyBridgeInspectionSlots.
+	^ table
+]
+
+{ #category : #'spec - inspections' }
+PyBridgeObject >> pyBridgeInspectionSlots [
+
+	| dict elements |
+	[ dict := self __dict__ ]
+		on: Error
+		do: [ :e | 
+			^ OrderedCollection with: (PyBridgeObjectInspectorNode new
+					   key: 'None';
+					   value: 'Object has no __dict__';
+					   yourself) ].
+	self flag: 'This way of doing things is incorrect: it should be done only if we get a collection. How to make the difference?'.
 	elements := OrderedCollection new.
-	[ 
-	self __dict__ asNativeDict keysAndValuesDo: [ :k :v | 
+	dict items do: [ :k :v | 
 		elements add: ((PyBridgeObjectInspectorNode hostObject: self)
 				 key: k;
 				 value: v;
-				 yourself) ] ]
-		on: Error
-		do: [ :e | 
-			self halt.
-			elements add: (PyBridgeObjectInspectorNode new
-					 key: 'None';
-					 value: 'Object has no __dict__';
-					 yourself) ].
-
-	table items: elements.
-	^ table
+				 yourself) ].
+	^ elements
 ]
 
 { #category : #'reflective operations' }

@@ -40,10 +40,23 @@ PyBridgeObjectLiteral >> literalValue: anObject [
 ]
 
 { #category : #accessing }
+PyBridgeObjectLiteral >> printOn: aStream [
+	aStream << literalValue asString
+]
+
+{ #category : #accessing }
 PyBridgeObjectLiteral >> printString [
-	| str |
-	str := self class name asString.
-	^ str, '(', literalValue asString, ')'
+
+	^ literalValue asString
+]
+
+{ #category : #'spec - inspections' }
+PyBridgeObjectLiteral >> pyBridgeInspectionSlots [
+
+	^ OrderedCollection with: (PyBridgeObjectInspectorNode new
+			   key: self class name;
+			   value: self literalValue;
+			   yourself)
 ]
 
 { #category : #accessing }
