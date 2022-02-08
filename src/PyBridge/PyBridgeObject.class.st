@@ -210,6 +210,14 @@ PyBridgeObject >> finalize [
 		do: [ :ex | self ]
 ]
 
+{ #category : #testing }
+PyBridgeObject >> hasAttribute: aString [
+
+	^ ([ self __get_attribute__: aString ]
+		   on: Error
+		   do: [ nil ]) notNil
+]
+
 { #category : #'reflective operations' }
 PyBridgeObject >> initialize [
 	objectId := self bridgeUUID.
