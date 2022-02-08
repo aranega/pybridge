@@ -210,6 +210,14 @@ PyBridgeObject >> finalize [
 		do: [ :ex | self ]
 ]
 
+{ #category : #testing }
+PyBridgeObject >> hasAttribute: aString [
+
+	^ ([ self __get_attribute__: aString ]
+		   on: Error
+		   do: [ nil ]) notNil
+]
+
 { #category : #'reflective operations' }
 PyBridgeObject >> initialize [
 	objectId := self bridgeUUID.
@@ -284,7 +292,7 @@ PyBridgeObject >> pyBridgeInspection [
 { #category : #'spec - inspections' }
 PyBridgeObject >> pyBridgeInspectionSlots [
 
-	| dict elements |
+	| dict isCollectionTrick |
 	[ dict := self __dict__ ]
 		on: Error
 		do: [ :e | 
@@ -292,14 +300,31 @@ PyBridgeObject >> pyBridgeInspectionSlots [
 					   key: 'None';
 					   value: 'Object has no __dict__';
 					   yourself) ].
-	self flag: 'This way of doing things is incorrect: it should be done only if we get a collection. How to make the difference?'.
-	elements := OrderedCollection new.
-	dict items do: [ :k :v | 
-		elements add: ((PyBridgeObjectInspectorNode hostObject: self)
-				 key: k;
-				 value: v;
-				 yourself) ].
-	^ elements
+
+	isCollectionTrick := [ self feature many asNativeObject ]
+		                     on: Error
+		                     do: [ 
+			                     [ 
+			                     dict asNativeDict.
+			                     false ]
+				                     on: Error
+				                     do: [ true ] ].
+
+	isCollectionTrick ifTrue: [ 
+		| elements |
+		elements := OrderedCollection new.
+		dict items do: [ :k :v | 
+			elements add: ((PyBridgeObjectInspectorNode hostObject: self)
+					 key: k;
+					 value: v;
+					 yourself) ].
+		^ elements ].
+
+	^ dict asNativeDict associations collect: [ :association | 
+		  (PyBridgeObjectInspectorNode hostObject: self)
+			  key: association key;
+			  value: association value;
+			  yourself ]
 ]
 
 { #category : #'reflective operations' }
