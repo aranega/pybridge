@@ -16,7 +16,7 @@ Metacello new
 
 ### Python part
 
-The python code is located in the `python` branch.
+The python code is embedded in this same repository.
 The project had been built using `pipenv`. Simply checkout in the `python` branch and do:
 
 ```
