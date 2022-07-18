@@ -168,6 +168,7 @@ def create_instance(object_id, class_name=None, clazz=None, args=None, nonexisti
     if isinstance(args, dict):
         instance = clazz(**args)
     else:
+        args = [decrypt(arg) for arg in args]
         instance = clazz(*args) if args else clazz()
     if nonexisting:
         object_map[id(instance)] = instance
