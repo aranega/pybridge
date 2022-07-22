@@ -34,7 +34,7 @@ PyBridgeClass >> newFromDict: arguments [
 	dict := {(#args -> args).
 	(#clazz -> (self encryptValue: self)).
 	(#nonexisting -> true)} asDictionary.
-	^ self decryptAnswer: (self post: dict action: #create_instance)
+	^ self class decryptAnswer: (self post: dict action: #create_instance)
 ]
 
 { #category : #private }
@@ -44,7 +44,7 @@ PyBridgeClass >> newFromList: arguments [
 	dict := {(#args -> args asArray).
 	(#clazz -> (self encryptValue: self)).
 	(#nonexisting -> true)} asDictionary.
-	^ self decryptAnswer: (self post: dict action: #create_instance)
+	^ self class decryptAnswer: (self post: dict action: #create_instance)
 ]
 
 { #category : #'reflective operations' }

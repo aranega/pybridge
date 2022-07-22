@@ -32,7 +32,9 @@ PyBridgeObject class >> decryptException: aDict [
 PyBridgeObject class >> decryptLiteral: aDict [
 	| value |
 	value := aDict at: #value.
-	^ PyBridgeObjectLiteral with: value.
+	^ value
+	"
+	^ PyBridgeObjectLiteral with: value."
 ]
 
 { #category : #'reflective operations' }
@@ -264,13 +266,13 @@ PyBridgeObject >> post: dict action: action [
 { #category : #'reflective operations' }
 PyBridgeObject >> printOn: aStream [
 
-	aStream << self __str__ literalValue
+	aStream << self __str__
 ]
 
 { #category : #'reflective operations' }
 PyBridgeObject >> printString [
 
-	^ self __str__ literalValue
+	^ self __str__
 ]
 
 { #category : #'spec - inspections' }
