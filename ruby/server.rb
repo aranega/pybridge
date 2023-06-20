@@ -1,7 +1,6 @@
 require 'sinatra'
 require 'json'
 require './utils.rb'
-require 'sonic_pi'
 
 # $objects_register = {}
 # $NIL_OBJECT = {'kind': 'nil_object'}
