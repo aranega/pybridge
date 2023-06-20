@@ -1,4 +1,4 @@
-# How to use the bridge between Ruby, Python and Pharo
+# How to use the bridge between Ruby and Python
 
 ## Requirements
 
@@ -53,38 +53,9 @@ To import Python objects in Ruby, first go in the `ruby` directory then, load th
 ```ruby
 require './bridge.rb'
 
-Dict = $python.load 'buildins::dict'
-d = Dict.new()
-d['foo'] = 5
+A = $python.load 'A'
+a = A.new()
 
-print(d['foo'])
-# displays 5
-```
-
-## Use Ruby objects in Pharo
-
-To use Ruby objects in Pharo, we can directly load the required classes from Ruby.
-
-```smalltalk
-hash_class := RubyBridge load: #Hash.
-
-h := hash_class new.
-h at: #foo put: '5'.
-
-h at: #foo  "Evaluation shows: RubyBridgeObjectLiteral(5)"
-```
-
-### Use Pharo objects in Ruby
-
-To use Pharo objects in Ruby, we need to load the bridge.
-
-```ruby
-require './bridge.rb'
-
-Dict = $pharo.load 'Dictionnary'
-d = Dict.new()
-d['foo'] = 5
-
-print(d['foo'])
-# displays 5
+print(a.test())
+# displays 0=>nil
 ```
